@@ -74,8 +74,6 @@ josephine history         # synthèse des dernières 24 h
 | `josephine config show` | Affiche la configuration YAML |
 | `josephine config validate` | Valide la configuration |
 
-**Prévu :** `clean`, `fix`, `report`, `config edit` — voir [docs/ROADMAP.md](docs/ROADMAP.md).
-
 **Hors périmètre :** Docker, TUI/`watch` (voir roadmap).
 
 ---

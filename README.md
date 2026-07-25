@@ -107,7 +107,7 @@ cargo install --git https://github.com/systm-d/josephine josephine
 ```sh
 josephine               # quick status summary (default)
 josephine status        # CPU, memory, disk, temperature, systemd, updates at a glance
-josephine doctor        # detailed diagnostics, check by check
+josephine doctor        # full diagnostics, and what's left to do
 josephine doctor -v     # verbose: thresholds, top 10 processes, intervals
 josephine history       # last 24 h: min/avg/max + sparkline trends, and events
 josephine daemon start  # run the background watcher
@@ -116,7 +116,6 @@ josephine config show   # print the current configuration
 josephine config edit   # edit the config in $EDITOR, then re-validate
 josephine report        # dated plain-text health report (-o writes to a file)
 josephine clean         # preview reclaimable disk space (--apply clears caches)
-josephine fix           # guided remediation for failed services / low disk
 josephine explain       # what each check watches and how to act
 josephine explain disk  # full explanation for one check
 josephine notify test   # send a test desktop notification

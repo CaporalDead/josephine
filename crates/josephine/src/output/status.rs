@@ -145,6 +145,11 @@ mod tests {
     #[test]
     fn footer_message_pluralizes() {
         use josephine_core::i18n::{self, Lang};
+        // A different test binary than josephine-core's own (this crate's
+        // integration tests spawn a subprocess and can't race this), but
+        // still shares this crate's test binary with any other test here
+        // that touches the language — guard for consistency with core.
+        let _guard = i18n::lock_for_test();
         let prev = i18n::lang();
         i18n::set_lang(Lang::En);
         // The zero-issue line is varied (voice::all_clear); just assert it speaks up.

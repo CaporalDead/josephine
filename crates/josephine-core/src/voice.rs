@@ -143,47 +143,10 @@ pub fn doctor_verdict(worst: Severity) -> &'static str {
     }
 }
 
-// --- fix (her finger-snap) --------------------------------------------------
+// --- remedies (her finger-snap) ---------------------------------------------
 
-/// The dimmed tagline under the `fix` header.
-pub fn fix_tagline() -> &'static str {
-    pick(&[
-        (
-            "The closest a terminal gets to a snap of the fingers.",
-            "Ce qu'un terminal fait de plus proche d'un claquement de doigts.",
-        ),
-        (
-            "A snap of the fingers — give or take a keystroke.",
-            "Un claquement de doigts — à une touche près.",
-        ),
-        (
-            "You point, I guide. No wand required.",
-            "Vous montrez, je guide. Pas besoin de baguette.",
-        ),
-    ])
-}
-
-/// Closing line for `fix` when there was nothing to mend.
-pub fn fix_all_good() -> &'static str {
-    pick(&[
-        (
-            "✧ Nothing to fix — the machine's in good shape. I'll see myself out.",
-            "✧ Rien à réparer — la machine va bien. Je m'éclipse.",
-        ),
-        (
-            "✧ All sound. My work here is done.",
-            "✧ Tout est sain. Ma mission ici est finie.",
-        ),
-        (
-            "✧ Nothing broken. I'll slip away, then — ni vu ni connu.",
-            "✧ Rien de cassé. Je file, alors — ni vu ni connu.",
-        ),
-    ])
-}
-
-/// Closing line for `fix` when it pointed at something to mend — she guides,
-/// you act.
-pub fn fix_hands_off() -> &'static str {
+/// Closing line for the "what's left to do" section — she guides, you act.
+pub fn remedy_hands_off() -> &'static str {
     pick(&[
         (
             "✧ No magic wand here: I show the way, you keep the wheel.",
@@ -348,8 +311,14 @@ mod tests {
 
     /// Every phrasing in every pool ships EN + FR, is non-empty, and stays
     /// clear of alarmist vocabulary — in either language.
+    ///
+    /// Holds `i18n::lock_for_test()` across the whole two-language loop:
+    /// this test pins the global language to French for a stretch, and
+    /// without the guard another test asserting English text could observe
+    /// that mid-run.
     #[test]
     fn every_pool_is_bilingual_and_calm() {
+        let _guard = i18n::lock_for_test();
         let prev = i18n::lang();
         let mut all: Vec<&'static str> = Vec::new();
         for lang in [Lang::En, Lang::Fr] {
@@ -357,9 +326,7 @@ mod tests {
             for _ in 0..80 {
                 all.push(status_tagline());
                 all.push(all_clear());
-                all.push(fix_tagline());
-                all.push(fix_all_good());
-                all.push(fix_hands_off());
+                all.push(remedy_hands_off());
                 all.push(daemon_started());
                 all.push(daemon_stopped());
                 all.push(daemon_restarted());

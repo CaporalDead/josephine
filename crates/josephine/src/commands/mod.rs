@@ -3,7 +3,6 @@ pub mod config_cmd;
 pub mod daemon_cmd;
 pub mod doctor_cmd;
 pub mod explain_cmd;
-pub mod fix_cmd;
 pub mod history_cmd;
 pub mod notify_cmd;
 pub mod report_cmd;
