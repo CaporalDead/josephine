@@ -444,6 +444,8 @@ footer {
 .how__art { display: grid; place-items: center; }
 .art { width: 100%; height: auto; display: block; }
 .how__art .art { max-width: 26rem; }
+.checks__art { margin: 1.8rem auto 0; max-width: 34rem; }
+.foot__art { width: 14rem; height: auto; display: block; margin: 0 auto 1.4rem; opacity: 0.9; }
 
 .flow { display: grid; gap: 0; justify-items: stretch; }
 .flow__node {
