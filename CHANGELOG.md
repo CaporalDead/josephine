@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`doctor` now closes on what's left to do.** After the check-by-check exam,
+  a grouped section lists every action worth taking — the exact unit to restart,
+  the biggest consumer to stop — most severe first, and only when something
+  needs doing. The remedies for all fourteen checks now live in one place
+  (`josephine-core/src/remedy.rs`), shared with `josephine explain`, so the two
+  commands cannot drift apart.
+
+### Removed
+
+- **`josephine fix` is gone.** It promised a repair it explicitly refused to
+  perform — it only ever printed commands for you to run — and covered two of
+  the fourteen checks. Its remedies moved into `doctor`, which covers all
+  fourteen. Its closing promise did not change and did not move: Joséphine
+  shows the way, you keep the wheel.
+
+### Changed
+
+- Seven of the fourteen remedies rewritten so none sends you back to
+  `josephine doctor` — inside doctor that was circular.
+
 ## [0.10.0] - 2026-07-24
 
 ### Added

@@ -45,7 +45,7 @@ Chaque check implémente le trait `Check` (`josephine-core/src/check.rs`), est i
 | `history` | ✅ |
 | `daemon start/stop/restart/status/logs/run` | ✅ |
 | `config show/validate/edit` | ✅ |
-| `clean` (`--apply`), `fix`, `report` (`-o`, `--json`) | ✅ |
+| `clean` (`--apply`), `report` (`-o`, `--json`) | ✅ |
 | `notify test` | ✅ |
 | `update` (`--check`, `--yes`) | ✅ |
 | `completions <bash\|zsh\|fish…>` | ✅ |
@@ -71,7 +71,7 @@ de couleur (`●` ok, `▲` attention, `✕` critique — dégradés en
 emoji). Un `banner.txt` personnalisé (`~/.config/josephine/banner.txt`) reste
 honoré au-dessus de l'en-tête. Les notifications desktop
 (`messages.rs`) suivent le même détonage. Toutes les commandes sont
-désormais passées à la voix « chaleur sobre » : `clean`, `fix` et `update`
+désormais passées à la voix « chaleur sobre » : `clean` et `update`
 s'ouvrent elles aussi avec l'en-tête sobre `✦` ; `report` garde son propre
 titre de document (« Joséphine — rapport système ») sans en-tête `✦`, pour
 éviter un « Joséphine » en double ; `daemon`, `config` et `notify` n'affichent
@@ -83,18 +83,21 @@ Joséphine a désormais un peu de **caractère**, et surtout de la **variété**
 le module `josephine-core/src/voice.rs` fournit un moteur qui tire au sort une
 formulation parmi plusieurs (toujours **EN + FR**), pour qu'elle ne dise pas la
 même phrase à chaque fois. Sont variés : l'accroche de `status`, la ligne
-« tout va bien », les signatures de `fix`, les lignes de `daemon`, le message
+« tout va bien », la clôture des remèdes de `doctor`, les lignes de `daemon`, le message
 de `notify test`, et les notifications de **rétablissement**. Règle d'or : la
 variété ne touche que les **lignes de caractère** — les *faits* d'une alerte
 (le nombre, la commande à lancer) restent stables et précis. Le
-**claquement de doigts** (`✧`) est le geste-signature repris par `josephine
-fix` (aide + ligne de clôture).
+**claquement de doigts** (`✧`) ferme la section « ce qu'il reste à faire »
+de `josephine doctor`.
 
 `doctor` **diagnostique** maintenant vraiment : il ouvre sur un **verdict**
 (rien à signaler / une note ou deux / quelque chose réclame votre attention)
 avant l'examen check par check. `history` s'est réchauffé : accroche 24 h,
 transitions d'état adoucies façon garde (`▲ attention → ● résolu` au lieu de
 `WARNING → RECOVERED`), et une ligne de clôture — le tout bilingue.
+
+Depuis 0.11.0, il ferme aussi sur **ce qu'il reste à faire** : la liste des
+actions à mener, la plus grave d'abord, et seulement quand il y en a.
 
 ### Démon
 
@@ -160,7 +163,7 @@ Validation dans `config.rs::validate()`.
 
 Tests unitaires (`josephine-core`) + intégration CLI (`assert_cmd`) couvrant
 config, règles, messages, self-update, réseau, batterie et le parsing des
-commandes (`clean`, `fix`).
+commandes (`clean`).
 
 Les checks reposant sur `/proc` / `systemctl` / `ping` ne sont pas exécutés
 en CI ; leur logique pure est testée via des helpers dédiés.

@@ -150,8 +150,8 @@ Your machine, watched over.
       <div class="toast__body">
         <div class="toast__meta"><span class="toast__app">Joséphine</span><span class="toast__sev g-crit">{% if fr %}critique{% else %}critical{% endif %}</span><span class="toast__time">{% if fr %}il y a 9 min{% else %}9 min ago{% endif %}</span></div>
         <p class="toast__title">{% if fr %}nginx.service s'est arrêté{% else %}nginx.service has stopped{% endif %}</p>
-        <p class="toast__text">{% if fr %}En échec depuis 14:02. La remédiation guidée peut le relancer :{% else %}Failed since 14:02. Guided remediation can bring it back:{% endif %}</p>
-        <code class="toast__cmd">josephine fix</code>
+        <p class="toast__text">{% if fr %}En échec depuis 14:02. Joséphine vous montre la commande pour le relancer :{% else %}Failed since 14:02. Joséphine shows you the command to bring it back:{% endif %}</p>
+        <code class="toast__cmd">josephine doctor</code>
       </div>
     </figure>
     <figure class="toast toast--ok">
@@ -251,7 +251,12 @@ Your machine, watched over.
  <span class="g-ok">●</span>  Disque · <span class="g-ok">ok</span>                           21 %
     ▓▓▓░░░░░░░░░░░  « / » (btrfs) 195G / 937G · SSD
  <span class="g-ok">●</span>  Noyau · <span class="g-ok">ok</span>                        0 incident
-    Aucun incident noyau sur la dernière heure.</pre>
+    Aucun incident noyau sur la dernière heure.
+
+  Ce qu'il reste à faire
+    1. Appliquez-les quand vous pouvez : `sudo apt upgrade`, `sudo dnf upgrade`.
+
+ <span class="dim">✧ Je montre, vous appuyez. Rien ne s'exécute dans votre dos.</span></pre>
 {%- else -%}
 <pre><span class="dim">✦ Joséphine · diagnostic                        14:40</span>
 14 checks · 1 to look at
@@ -261,7 +266,12 @@ Your machine, watched over.
  <span class="g-ok">●</span>  Disk · <span class="g-ok">ok</span>                             21 %
     ▓▓▓░░░░░░░░░░░  « / » (btrfs) 195G / 937G · SSD
  <span class="g-ok">●</span>  Kernel · <span class="g-ok">ok</span>                       0 incidents
-    No kernel incidents in the last hour.</pre>
+    No kernel incidents in the last hour.
+
+  What's left to do
+    1. Apply them when convenient: `sudo apt upgrade`, `sudo dnf upgrade`.
+
+ <span class="dim">✧ I point, you press. Nothing runs behind your back.</span></pre>
 {%- endif %}
   </div>
 </section>
@@ -284,7 +294,6 @@ Your machine, watched over.
     <div class="cmd cmd--feat"><span class="cmd__ic">{{ m::icon(name="smart") }}</span><code>doctor</code><span class="cmd__d">{% if fr %}Diagnostic détaillé, contrôle par contrôle{% else %}Detailed diagnosis, check by check{% endif %}</span></div>
     <div class="cmd cmd--feat"><span class="cmd__ic">{{ m::icon(name="history") }}</span><code>history</code><span class="cmd__d">{% if fr %}Tendances sur 24 h, min / moy / max{% else %}24-hour trends, min / avg / max{% endif %}</span></div>
     <div class="cmd cmd--feat"><span class="cmd__ic">{{ m::icon(name="clean") }}</span><code>clean</code><span class="cmd__d">{% if fr %}Récupérer de l'espace disque{% else %}Reclaim disk space{% endif %}</span></div>
-    <div class="cmd cmd--feat cmd--snap"><span class="cmd__ic">{{ m::icon(name="fix") }}</span><span class="cmd__snap" aria-hidden="true">✧</span><code>fix</code><span class="cmd__d">{% if fr %}Son claquement de doigts : remédiation guidée, pas à pas{% else %}Her finger-snap: guided remediation, one step at a time{% endif %}</span></div>
     <div class="cmd"><span class="cmd__ic">{{ m::icon(name="status") }}</span><code>status</code><span class="cmd__d">{% if fr %}Résumé d'un écran de chaque contrôle{% else %}One-screen summary of every check{% endif %}</span></div>
     <div class="cmd"><span class="cmd__ic">{{ m::icon(name="report") }}</span><code>report</code><span class="cmd__d">{% if fr %}Rapport texte daté (<code>--json</code>){% else %}Dated plain-text report (<code>--json</code>){% endif %}</span></div>
     <div class="cmd"><span class="cmd__ic">{{ m::icon(name="explain") }}</span><code>explain</code><span class="cmd__d">{% if fr %}Ce que surveille chaque contrôle{% else %}What each check watches, and why{% endif %}</span></div>
