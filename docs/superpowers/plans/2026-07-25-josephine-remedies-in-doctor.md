@@ -877,7 +877,7 @@ Expected: both FAIL — `fix` is still a working subcommand and still appears in
 git rm crates/josephine/src/commands/fix_cmd.rs
 ```
 
-- [ ] **Step 2: Drop the module declaration**
+- [ ] **Step 4: Drop the module declaration**
 
 In `crates/josephine/src/commands/mod.rs`, remove line 6:
 
@@ -885,7 +885,7 @@ In `crates/josephine/src/commands/mod.rs`, remove line 6:
 pub mod fix_cmd;
 ```
 
-- [ ] **Step 3: Drop the import in `cli.rs`**
+- [ ] **Step 5: Drop the import in `cli.rs`**
 
 Change the `use` block at `crates/josephine/src/cli.rs:7-10` to:
 
@@ -896,7 +896,7 @@ use crate::commands::{
 };
 ```
 
-- [ ] **Step 4: Drop the subcommand variant**
+- [ ] **Step 6: Drop the subcommand variant**
 
 Remove these two lines from the `Commands` enum (`crates/josephine/src/cli.rs:61-62`):
 
@@ -905,7 +905,7 @@ Remove these two lines from the `Commands` enum (`crates/josephine/src/cli.rs:61
     Fix,
 ```
 
-- [ ] **Step 5: Drop the French help entry**
+- [ ] **Step 7: Drop the French help entry**
 
 Remove this from `localize_help_fr` (`crates/josephine/src/cli.rs:123-125`):
 
@@ -915,7 +915,7 @@ Remove this from `localize_help_fr` (`crates/josephine/src/cli.rs:123-125`):
         })
 ```
 
-- [ ] **Step 6: Drop the dispatch arm**
+- [ ] **Step 8: Drop the dispatch arm**
 
 Remove this from the `match cli.command` block (`crates/josephine/src/cli.rs:178`):
 
@@ -923,23 +923,26 @@ Remove this from the `match cli.command` block (`crates/josephine/src/cli.rs:178
         Some(Commands::Fix) => fix_cmd::run()?,
 ```
 
-- [ ] **Step 7: Verify the command is gone**
+- [ ] **Step 9: Verify the command is gone**
+
+Run: `cargo test -p josephine --test cli fix`
+Expected: PASS — both tests from Step 1 now hold.
 
 Run: `cargo run -p josephine -- fix`
 Expected: clap rejects it — `error: unrecognized subcommand 'fix'`.
 
-Run: `cargo run -p josephine -- --help`
-Expected: no `fix` line. `cargo run -p josephine -- completions bash | grep -c fix` returns `0`.
+Run: `cargo run -p josephine -- completions bash | grep -c fix`
+Expected: `0`.
 
-- [ ] **Step 8: Run the quality gate**
+- [ ] **Step 10: Run the quality gate**
 
 Run: `cargo fmt --check && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace`
 Expected: all green. `voice::fix_*` are `pub` in a library crate, so no dead-code warning until Task 5 removes them.
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 11: Commit**
 
 ```bash
-git add -A crates/josephine/src
+git add -A crates/josephine/src crates/josephine/tests/cli.rs
 git commit -m "feat(cli)!: remove the fix command
 
 It promised a repair it explicitly refused to perform, and covered only
@@ -1123,7 +1126,45 @@ Check the surrounding block for a `doctor` line; if it does not already mention 
 
 - [ ] **Step 2: Update `docs/CURRENT_STATE.md`**
 
-Five mentions to treat, at lines 48, 74, 86, 91 and 163. Line 48 is a command table — drop `fix` from the cell. Lines 74, 86, 91 and 163 are prose about the tone pass and the commands it covered; rewrite them so they describe the current surface without claiming `fix` exists. Re-read each line in context rather than pattern-replacing: they are French prose, and a blind substitution will produce broken sentences.
+Five mentions, with the exact replacement for each. The file is French prose — apply these verbatim rather than pattern-replacing `fix`.
+
+Line 48, the command table:
+
+```markdown
+| `clean` (`--apply`), `report` (`-o`, `--json`) | ✅ |
+```
+
+Line 74, the tone-pass paragraph:
+
+```markdown
+désormais passées à la voix « chaleur sobre » : `clean` et `update`
+```
+
+Line 86, the list of varied voice lines — `fix`'s signature line survives as the remedies' closing line:
+
+```markdown
+« tout va bien », la clôture des remèdes de `doctor`, les lignes de `daemon`, le message
+```
+
+Lines 90-91, the finger-snap sentence:
+
+```markdown
+**claquement de doigts** (`✧`) ferme la section « ce qu'il reste à faire »
+de `josephine doctor`.
+```
+
+Line 163, the test coverage sentence. Note this line was **already inaccurate** — `crates/josephine/tests/cli.rs` has never had a `fix` test:
+
+```markdown
+commandes (`clean`).
+```
+
+Then extend the `doctor` paragraph that begins at line 93 with a sentence on the new section, in the same register:
+
+```markdown
+Depuis 0.11.0, il ferme aussi sur **ce qu'il reste à faire** : la liste des
+actions à mener, la plus grave d'abord, et seulement quand il y en a.
+```
 
 - [ ] **Step 3: Rewrite the site's critical notification**
 
@@ -1136,16 +1177,29 @@ In `site/templates/index.html:150-155`, the demo toast promises exactly what the
 
 - [ ] **Step 4: Show the new section in the CLI showcase**
 
-Find the block in `site/templates/index.html` that renders sample `doctor` output (search for `doctor` in the template and in `site/sass/main.scss` for the matching class). Add the closing section to that sample, in both languages, matching the real rendering:
+`site/templates/index.html:244-266` renders a sample `doctor` report inside a `.term` block, in French then English. Its one non-`ok` check is `Mises à jour · attention`, so the sample gains exactly one action — the `updates` remedy, verbatim from `remedy.rs`.
 
-```
+In the **French** `<pre>`, insert before the closing `</pre>` (after the `Aucun incident noyau…` line):
+
+```html
+
   Ce qu'il reste à faire
-    1. sudo systemctl restart nginx.service
-       (comprendre pourquoi : systemctl status nginx.service)
-    2. josephine clean — voyez ce qui peut être libéré
+    1. Appliquez-les quand vous pouvez : `sudo apt upgrade`, `sudo dnf upgrade`.
+
+ <span class="dim">✧ Je montre, vous appuyez. Rien ne s'exécute dans votre dos.</span>
 ```
 
-If no `doctor` sample exists in the template, skip this step and note it in the commit message rather than inventing a new section.
+In the **English** `<pre>`, likewise:
+
+```html
+
+  What's left to do
+    1. Apply them when convenient: `sudo apt upgrade`, `sudo dnf upgrade`.
+
+ <span class="dim">✧ I point, you press. Nothing runs behind your back.</span>
+```
+
+The sample's rule line is 50 characters wide while these action lines run to ~73. Check the rendered page at a narrow viewport: if the `<pre>` overflows its container, widen the sample's rule or let the existing `.term` overflow rule handle it — do **not** shorten the quoted remedy, since the point of the sample is that it matches what the binary prints.
 
 - [ ] **Step 5: Build the site to verify**
 

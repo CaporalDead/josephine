@@ -121,7 +121,7 @@ Joséphine does not manufacture work.
   Ce qu'il reste à faire
     1. sudo systemctl restart nginx.service
        (comprendre pourquoi : systemctl status nginx.service)
-    2. josephine clean — voyez ce qui peut être libéré
+    2. `josephine clean` estime ce qui peut être libéré ; videz le plus gros.
 
  ✧ Je montre, vous appuyez. Rien ne s'exécute dans votre dos.
 ```
