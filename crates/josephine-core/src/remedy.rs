@@ -237,9 +237,107 @@ pub fn all() -> &'static [Advice] {
     ADVICE
 }
 
+use crate::check::{CheckResult, Severity};
+use crate::i18n::{self, Lang};
+
+/// At most this many entries per check in the "what's left to do" section;
+/// beyond it, a counted overflow line. Nothing is dropped silently.
+pub const MAX_ENTRIES_PER_CHECK: usize = 5;
+
+/// One actionable step, ready to render.
+pub struct Remedy {
+    /// The action — usually a command to run.
+    pub action: String,
+    /// Optional second line: how to understand the problem before acting.
+    pub hint: Option<String>,
+}
+
+impl Remedy {
+    fn action(action: impl Into<String>) -> Self {
+        Self {
+            action: action.into(),
+            hint: None,
+        }
+    }
+
+    fn with_hint(action: impl Into<String>, hint: impl Into<String>) -> Self {
+        Self {
+            action: action.into(),
+            hint: Some(hint.into()),
+        }
+    }
+}
+
+/// The actions for a check that came back Attention or Critique.
+///
+/// Contextual where the collected state allows it (`systemd`, `cpu`,
+/// `memory`), static [`Advice`] copy otherwise. A healthy check yields
+/// nothing — Joséphine does not manufacture work.
+pub fn for_result(result: &CheckResult) -> Vec<Remedy> {
+    if result.worst_severity() == Severity::Info {
+        return Vec::new();
+    }
+    let Some(advice) = advice(&result.check_name) else {
+        return Vec::new();
+    };
+
+    match result.check_name.as_str() {
+        "systemd" if !result.top_processes.is_empty() => failed_units(&result.top_processes),
+        "cpu" | "memory" => match result.top_processes.first() {
+            Some(top) => vec![Remedy::with_hint(
+                match i18n::lang() {
+                    Lang::En => format!("Biggest consumer right now: {top}"),
+                    Lang::Fr => format!("Le plus gourmand en ce moment : {top}"),
+                },
+                i18n::t(advice.remedy.0, advice.remedy.1),
+            )],
+            None => vec![Remedy::action(i18n::t(advice.remedy.0, advice.remedy.1))],
+        },
+        _ => vec![Remedy::action(i18n::t(advice.remedy.0, advice.remedy.1))],
+    }
+}
+
+/// One restart per failed unit, capped, with a counted overflow line.
+fn failed_units(units: &[String]) -> Vec<Remedy> {
+    let mut remedies: Vec<Remedy> = units
+        .iter()
+        .take(MAX_ENTRIES_PER_CHECK)
+        .map(|unit| {
+            Remedy::with_hint(
+                format!("sudo systemctl restart {unit}"),
+                match i18n::lang() {
+                    Lang::En => format!("(find out why: systemctl status {unit})"),
+                    Lang::Fr => format!("(comprendre pourquoi : systemctl status {unit})"),
+                },
+            )
+        })
+        .collect();
+
+    let hidden = units.len().saturating_sub(MAX_ENTRIES_PER_CHECK);
+    if hidden > 0 {
+        remedies.push(Remedy::action(match i18n::lang() {
+            Lang::En => format!("+ {hidden} more failed units — `systemctl --failed` lists them"),
+            Lang::Fr => {
+                format!("+ {hidden} autres unités en échec — `systemctl --failed` les liste")
+            }
+        }));
+    }
+    remedies
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::i18n::{self, Lang};
+
+    /// The fallback tests read the EN string, so pin the language.
+    fn with_english<T>(f: impl FnOnce() -> T) -> T {
+        let prev = i18n::lang();
+        i18n::set_lang(Lang::En);
+        let out = f();
+        i18n::set_lang(prev);
+        out
+    }
 
     #[test]
     fn all_fourteen_checks_have_advice() {
@@ -302,5 +400,112 @@ mod tests {
     fn advice_is_found_by_name() {
         assert_eq!(advice("cpu").unwrap().name, "cpu");
         assert!(advice("nope").is_none());
+    }
+
+    use crate::check::{CheckResult, Metric, Severity};
+
+    /// A `CheckResult` whose single metric lands on the given severity.
+    fn result(name: &str, severity: Severity, top: &[&str]) -> CheckResult {
+        let value = match severity {
+            Severity::Info => 0.0,
+            Severity::Attention => 80.0,
+            Severity::Critique => 95.0,
+        };
+        CheckResult {
+            check_name: name.into(),
+            metrics: vec![Metric {
+                name: "usage_percent".into(),
+                value,
+                unit: "%".into(),
+                threshold_warning: Some(75.0),
+                threshold_critical: Some(90.0),
+            }],
+            details: Vec::new(),
+            top_processes: top.iter().map(|s| s.to_string()).collect(),
+            status_value: None,
+        }
+    }
+
+    #[test]
+    fn healthy_check_yields_no_remedy() {
+        assert!(for_result(&result("disk", Severity::Info, &[])).is_empty());
+    }
+
+    #[test]
+    fn systemd_yields_one_entry_per_failed_unit() {
+        let r = result(
+            "systemd",
+            Severity::Critique,
+            &["nginx.service", "backup.timer"],
+        );
+        let remedies = for_result(&r);
+        assert_eq!(remedies.len(), 2);
+        assert_eq!(remedies[0].action, "sudo systemctl restart nginx.service");
+        assert_eq!(remedies[1].action, "sudo systemctl restart backup.timer");
+        assert!(
+            remedies[0]
+                .hint
+                .as_ref()
+                .unwrap()
+                .contains("systemctl status nginx.service")
+        );
+    }
+
+    #[test]
+    fn systemd_caps_the_list_and_counts_the_overflow() {
+        let units = [
+            "a.service",
+            "b.service",
+            "c.service",
+            "d.service",
+            "e.service",
+            "f.service",
+            "g.service",
+        ];
+        let remedies = for_result(&result("systemd", Severity::Critique, &units));
+        assert_eq!(remedies.len(), MAX_ENTRIES_PER_CHECK + 1);
+        let overflow = &remedies[MAX_ENTRIES_PER_CHECK].action;
+        assert!(
+            overflow.contains('2'),
+            "overflow must count the rest: {overflow}"
+        );
+        assert!(remedies[MAX_ENTRIES_PER_CHECK].hint.is_none());
+    }
+
+    #[test]
+    fn cpu_quotes_the_top_process_verbatim() {
+        let r = result("cpu", Severity::Attention, &["firefox (PID 1234) — 87.3 %"]);
+        let remedies = for_result(&r);
+        assert_eq!(remedies.len(), 1);
+        assert!(
+            remedies[0].action.contains("firefox (PID 1234) — 87.3 %"),
+            "got: {}",
+            remedies[0].action
+        );
+        assert!(remedies[0].hint.is_some());
+    }
+
+    #[test]
+    fn cpu_without_process_list_falls_back_to_static_advice() {
+        with_english(|| {
+            let remedies = for_result(&result("cpu", Severity::Attention, &[]));
+            assert_eq!(remedies.len(), 1);
+            assert_eq!(remedies[0].action, advice("cpu").unwrap().remedy.0);
+        });
+    }
+
+    #[test]
+    fn check_without_contextual_rule_falls_back_to_static_advice() {
+        with_english(|| {
+            let remedies = for_result(&result("timesync", Severity::Attention, &[]));
+            assert_eq!(remedies.len(), 1);
+            assert_eq!(remedies[0].action, advice("timesync").unwrap().remedy.0);
+            assert!(remedies[0].hint.is_none());
+        });
+    }
+
+    #[test]
+    fn unknown_check_yields_no_remedy() {
+        assert!(for_result(&result("nope", Severity::Critique, &[])).is_empty());
     }
 }
