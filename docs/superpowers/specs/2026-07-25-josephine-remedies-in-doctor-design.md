@@ -121,7 +121,7 @@ Joséphine does not manufacture work.
   Ce qu'il reste à faire
     1. sudo systemctl restart nginx.service
        (comprendre pourquoi : systemctl status nginx.service)
-    2. josephine clean — /home est à 91 %, faites le point
+    2. josephine clean — voyez ce qui peut être libéré
 
  ✧ Je montre, vous appuyez. Rien ne s'exécute dans votre dos.
 ```
@@ -158,15 +158,26 @@ All 28 EN + FR strings are rewritten under these rules:
 - The optional `hint` line serves diagnosis, not action: `systemctl status
   <unit>`.
 
-Four checks gain a **contextual** remedy derived from the `CheckResult`; the
-other ten use their static text.
+Three checks gain a **contextual** remedy derived from the `CheckResult`; the
+other eleven use their static text.
 
 | Check | Contextual remedy | Source |
 |---|---|---|
 | `systemd` | one entry per failed unit — `sudo systemctl restart <unit>`, hint `systemctl status <unit>` | `top_processes` (`checks/systemd.rs:105`) |
-| `disk` | names the tight partition, then `josephine clean` | metric `usage_percent_worst` + `details` |
-| `cpu` | names the current top consumer | `top_processes` |
-| `memory` | names the current top consumer | `top_processes` |
+| `cpu` | quotes the current top consumer verbatim | `top_processes[0]` |
+| `memory` | quotes the current top consumer verbatim | `top_processes[0]` |
+
+`cpu` and `memory` are free: `top_processes[0]` already reads
+`firefox (PID 1234) — 87.3 %`, injected as-is with no parsing.
+
+**Why `disk` is not contextual.** Naming the tight partition would need either a
+new field on `CheckResult` — **35 construction sites across 15 files** — or an
+unsafe demangle: `disk` stores its fullest-partition sentence *localised* in
+`top_processes[0]`, and its per-partition metric names mangle the mount
+(`/mnt/my_disk` → `usage_percent__mnt_my_disk`, which cannot be reversed
+unambiguously). The disk check block prints `/home (ext4) : 91,2 % utilisé` two
+lines above the section, so the information is not lost. The disk remedy stays
+static: `josephine clean`.
 
 ---
 
@@ -230,7 +241,9 @@ In core, around `remedy.rs`:
 
 - systemd with two failed units → two remedies, correct unit names, each with
   its `hint`
-- disk in `Critique` → the remedy names the tightest partition
+- systemd with eight failed units → five entries plus a counted overflow line
+- disk in `Critique` → falls back to its static `josephine clean` remedy, with
+  no partition name and no `hint`
 - a check in default with no contextual rule → falls back to static text,
   non-empty
 - an `Info` result → no remedy at all (this is what guarantees a healthy machine
