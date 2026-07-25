@@ -6,7 +6,7 @@ use clap::{Parser, Subcommand};
 
 use crate::commands::{
     ConfigAction, DaemonAction, NotifyAction, clean_cmd, config_cmd, daemon_cmd, doctor_cmd,
-    explain_cmd, fix_cmd, history_cmd, notify_cmd, report_cmd, status_cmd, update_cmd,
+    explain_cmd, history_cmd, notify_cmd, report_cmd, status_cmd, update_cmd,
 };
 
 /// Your computer's guardian angel
@@ -58,8 +58,6 @@ enum Commands {
         #[arg(long)]
         apply: bool,
     },
-    /// Guided fixes: what's wrong and how to set it right — her finger-snap
-    Fix,
     /// Explain what each check watches, and how to act
     Explain {
         /// One check name (e.g. `cpu`, `disk`); omit to list all
@@ -120,9 +118,6 @@ fn localize_help_fr(command: clap::Command) -> clap::Command {
         .mut_subcommand("clean", |c| {
             c.about("Espace disque récupérable (aperçu par défaut)")
         })
-        .mut_subcommand("fix", |c| {
-            c.about("Réparations guidées : ce qui cloche et comment y remédier — son claquement de doigts")
-        })
         .mut_subcommand("explain", |c| {
             c.about("Expliquer ce que chaque check surveille et comment agir")
         })
@@ -175,7 +170,6 @@ async fn dispatch() -> Result<()> {
         Some(Commands::Daemon { action }) => daemon_cmd::run(action).await?,
         Some(Commands::Config { action }) => config_cmd::run(action)?,
         Some(Commands::Clean { apply }) => clean_cmd::run(apply)?,
-        Some(Commands::Fix) => fix_cmd::run()?,
         Some(Commands::Explain { check }) => explain_cmd::run(check.as_deref())?,
         Some(Commands::Report { output, json }) => report_cmd::run(output, json)?,
         Some(Commands::Notify { action }) => notify_cmd::run(action)?,

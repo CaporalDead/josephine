@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use assert_cmd::Command;
+use predicates::prelude::PredicateBooleanExt;
 use predicates::str::contains;
 
 /// A throwaway `HOME` so config/DB-touching commands never read or write the
@@ -66,6 +67,25 @@ fn unknown_command_fails() {
         .arg("definitely-not-a-command")
         .assert()
         .failure();
+}
+
+#[test]
+fn fix_is_no_longer_a_subcommand() {
+    Command::cargo_bin("josephine")
+        .unwrap()
+        .arg("fix")
+        .assert()
+        .failure();
+}
+
+#[test]
+fn help_does_not_offer_fix() {
+    Command::cargo_bin("josephine")
+        .unwrap()
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(contains("fix").not());
 }
 
 #[test]
