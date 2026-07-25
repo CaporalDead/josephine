@@ -180,7 +180,14 @@ Your machine, watched over.
   </p>
 
   <div class="how">
-    <figure class="how__art">{{ m::guardian() }}<figcaption class="how__cap">{% if fr %}Envoyée veiller sur une machine. La vôtre.{% else %}Sent to watch over one machine. Yours.{% endif %}</figcaption></figure>
+    <figure class="how__art">
+      <img class="art" src="{{ get_url(path='josephine-veille-1024.webp') }}"
+           srcset="{{ get_url(path='josephine-veille-768.webp') }} 768w, {{ get_url(path='josephine-veille-1024.webp') }} 1024w"
+           sizes="(max-width: 48rem) 90vw, 26rem"
+           width="1024" height="683" loading="lazy" decoding="async"
+           alt="{% if fr %}Joséphine, petite gardienne renard, lit un tableau de bord sur l'écran d'un ordinateur, une lanterne à la main{% else %}Joséphine, a small fox guardian, reads a dashboard on a computer screen, lantern in hand{% endif %}">
+      <figcaption class="how__cap">{% if fr %}Envoyée veiller sur une machine. La vôtre.{% else %}Sent to watch over one machine. Yours.{% endif %}</figcaption>
+    </figure>
     <div class="flow" role="list">
       <div class="flow__node" role="listitem"><span class="flow__k">{% if fr %}Votre machine{% else %}Your machine{% endif %}</span><span class="flow__v">/proc · /sys · systemd · journal</span></div>
       <div class="flow__arrow" aria-hidden="true">↓</div>

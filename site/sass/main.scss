@@ -432,7 +432,8 @@ footer {
   margin-top: 1.8rem;
 }
 .how__art { display: grid; place-items: center; }
-.guardian { width: 100%; max-width: 24rem; height: auto; }
+.art { width: 100%; height: auto; display: block; }
+.how__art .art { max-width: 26rem; }
 
 .flow { display: grid; gap: 0; justify-items: stretch; }
 .flow__node {
@@ -606,7 +607,7 @@ footer {
 @media (max-width: 48rem) {
   .how { grid-template-columns: 1fr; gap: 1.4rem; }
   .how__art { order: -1; }
-  .guardian { max-width: 18rem; }
+  .how__art .art { max-width: 18rem; }
 }
 @media (max-width: 40rem) {
   .hero { padding-top: 3rem; }
