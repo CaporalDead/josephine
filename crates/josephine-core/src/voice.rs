@@ -348,8 +348,14 @@ mod tests {
 
     /// Every phrasing in every pool ships EN + FR, is non-empty, and stays
     /// clear of alarmist vocabulary — in either language.
+    ///
+    /// Holds `i18n::lock_for_test()` across the whole two-language loop:
+    /// this test pins the global language to French for a stretch, and
+    /// without the guard another test asserting English text could observe
+    /// that mid-run.
     #[test]
     fn every_pool_is_bilingual_and_calm() {
+        let _guard = i18n::lock_for_test();
         let prev = i18n::lang();
         let mut all: Vec<&'static str> = Vec::new();
         for lang in [Lang::En, Lang::Fr] {

@@ -330,8 +330,13 @@ mod tests {
     use super::*;
     use crate::i18n::{self, Lang};
 
-    /// The fallback tests read the EN string, so pin the language.
+    /// The fallback tests read the EN string, so pin the language. Holds
+    /// `i18n::lock_for_test()` for the duration: `set_lang`/`lang()` are a
+    /// bare process-wide atomic, and this crate's tests run concurrently, so
+    /// without the guard another test pinning French could interleave
+    /// between our `set_lang(En)` and the read inside `for_result`.
     fn with_english<T>(f: impl FnOnce() -> T) -> T {
+        let _guard = i18n::lock_for_test();
         let prev = i18n::lang();
         i18n::set_lang(Lang::En);
         let out = f();
@@ -473,6 +478,49 @@ mod tests {
     }
 
     #[test]
+    fn systemd_at_the_cap_has_no_overflow_line() {
+        let units = [
+            "a.service",
+            "b.service",
+            "c.service",
+            "d.service",
+            "e.service",
+        ];
+        let remedies = for_result(&result("systemd", Severity::Critique, &units));
+        assert_eq!(remedies.len(), MAX_ENTRIES_PER_CHECK);
+        assert!(remedies.iter().all(|r| r.hint.is_some()));
+    }
+
+    #[test]
+    fn systemd_one_past_the_cap_overflows_by_one() {
+        let units = [
+            "a.service",
+            "b.service",
+            "c.service",
+            "d.service",
+            "e.service",
+            "f.service",
+        ];
+        let remedies = for_result(&result("systemd", Severity::Critique, &units));
+        assert_eq!(remedies.len(), MAX_ENTRIES_PER_CHECK + 1);
+        let overflow = &remedies[MAX_ENTRIES_PER_CHECK].action;
+        assert!(
+            overflow.contains('1'),
+            "overflow must count the rest: {overflow}"
+        );
+        assert!(remedies[MAX_ENTRIES_PER_CHECK].hint.is_none());
+    }
+
+    #[test]
+    fn systemd_without_failed_units_falls_back_to_static_advice() {
+        with_english(|| {
+            let remedies = for_result(&result("systemd", Severity::Critique, &[]));
+            assert_eq!(remedies.len(), 1);
+            assert_eq!(remedies[0].action, advice("systemd").unwrap().remedy.0);
+        });
+    }
+
+    #[test]
     fn cpu_quotes_the_top_process_verbatim() {
         let r = result("cpu", Severity::Attention, &["firefox (PID 1234) — 87.3 %"]);
         let remedies = for_result(&r);
@@ -491,6 +539,15 @@ mod tests {
             let remedies = for_result(&result("cpu", Severity::Attention, &[]));
             assert_eq!(remedies.len(), 1);
             assert_eq!(remedies[0].action, advice("cpu").unwrap().remedy.0);
+        });
+    }
+
+    #[test]
+    fn memory_without_process_list_falls_back_to_static_advice() {
+        with_english(|| {
+            let remedies = for_result(&result("memory", Severity::Attention, &[]));
+            assert_eq!(remedies.len(), 1);
+            assert_eq!(remedies[0].action, advice("memory").unwrap().remedy.0);
         });
     }
 
