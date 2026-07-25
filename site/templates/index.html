@@ -15,21 +15,31 @@
   </div>
 
   <div class="wrap hero">
-    <p class="eyebrow">{{ section.extra.eyebrow }}</p>
-    <h1><span class="star">✦</span> Joséphine</h1>
-    <p class="tagline">{{ section.extra.tagline }}</p>
-    <p class="lede">{{ section.extra.lede }}</p>
-    <div class="cta">
-      <a class="button button--primary" href="#install">{{ section.extra.cta2 }}</a>
-      <a class="button" href="{{ config.extra.repo_url }}">{{ section.extra.cta }}</a>
+    <div class="hero__text">
+      <p class="eyebrow">{{ section.extra.eyebrow }}</p>
+      <h1><span class="star">✦</span> Joséphine</h1>
+      <p class="tagline">{{ section.extra.tagline }}</p>
+      <p class="lede">{{ section.extra.lede }}</p>
+      <div class="cta">
+        <a class="button button--primary" href="#install">{{ section.extra.cta2 }}</a>
+        <a class="button" href="{{ config.extra.repo_url }}">{{ section.extra.cta }}</a>
+      </div>
+      <ul class="trust" aria-label="{% if fr %}Principes{% else %}Principles{% endif %}">
+        <li>{% if fr %}Pas de cloud{% else %}No cloud{% endif %}</li>
+        <li>{% if fr %}Pas de télémétrie{% else %}No telemetry{% endif %}</li>
+        <li>{% if fr %}Pas de compte{% else %}No account{% endif %}</li>
+        <li>{% if fr %}Écrite en Rust{% else %}Written in Rust{% endif %}</li>
+        <li>MIT / Apache-2.0</li>
+      </ul>
     </div>
-    <ul class="trust" aria-label="{% if fr %}Principes{% else %}Principles{% endif %}">
-      <li>{% if fr %}Pas de cloud{% else %}No cloud{% endif %}</li>
-      <li>{% if fr %}Pas de télémétrie{% else %}No telemetry{% endif %}</li>
-      <li>{% if fr %}Pas de compte{% else %}No account{% endif %}</li>
-      <li>{% if fr %}Écrite en Rust{% else %}Written in Rust{% endif %}</li>
-      <li>MIT / Apache-2.0</li>
-    </ul>
+
+    <figure class="hero__art">
+      <img class="art" src="{{ get_url(path='josephine-portrait-768.webp') }}"
+           srcset="{{ get_url(path='josephine-portrait-512.webp') }} 512w, {{ get_url(path='josephine-portrait-768.webp') }} 768w"
+           sizes="(max-width: 48rem) 60vw, 22rem"
+           width="768" height="768" loading="eager" decoding="async"
+           alt="{% if fr %}Joséphine, petite gardienne renard en kimono sombre, une flamme violette dans chaque paume{% else %}Joséphine, a small fox guardian in a dark kimono, a violet flame in each palm{% endif %}">
+    </figure>
 
     <div class="term" role="img" aria-label="{{ section.extra.readout_alt }}">
       <div class="term__bar"><span class="term__dot"></span><span class="term__dot"></span><span class="term__dot"></span><span class="term__title">josephine</span></div>

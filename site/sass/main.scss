@@ -76,7 +76,17 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
 main, header, footer { position: relative; z-index: 1; }
 
 /* ---------- hero ---------- */
-.hero { padding: 4.5rem 0 3.5rem; text-align: center; }
+.hero {
+  padding: 4.5rem 0 3.5rem;
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 22rem);
+  gap: 2.5rem 3rem;
+  align-items: center;
+}
+.hero__text { text-align: left; }
+.hero__text .tagline, .hero__text .lede { margin-left: 0; margin-right: 0; }
+.hero__text .cta, .hero__text .trust { justify-content: flex-start; }
+.hero__art { margin: 0; }
 .topbar {
   display: flex;
   align-items: center;
@@ -156,7 +166,7 @@ main, header, footer { position: relative; z-index: 1; }
   color: #d7dcf0;
   font-variant-numeric: tabular-nums;
 }
-.hero .term { max-width: 44rem; margin: 2.6rem auto 0; }
+.hero .term { grid-column: 1 / -1; max-width: 44rem; margin: 2.6rem auto 0; }
 
 .g-ok { color: var(--ok); }
 .g-warn { color: var(--warn); }
@@ -605,6 +615,11 @@ footer {
   .cmd__snap { animation: none; opacity: 0.6; transform: none; }
 }
 @media (max-width: 48rem) {
+  .hero { grid-template-columns: 1fr; }
+  .hero__text { text-align: center; }
+  .hero__text .tagline, .hero__text .lede { margin-left: auto; margin-right: auto; }
+  .hero__text .cta, .hero__text .trust { justify-content: center; }
+  .hero__art { max-width: 16rem; margin: 0 auto; }
   .how { grid-template-columns: 1fr; gap: 1.4rem; }
   .how__art { order: -1; }
   .how__art .art { max-width: 18rem; }
