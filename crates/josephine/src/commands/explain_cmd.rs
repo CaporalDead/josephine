@@ -34,8 +34,7 @@ fn print_list() {
     println!();
     for entry in all() {
         let label = check_label(entry.name);
-        let what = i18n::t(entry.what.0, entry.what.1);
-        println!("  {label} ({}) — {what}", entry.name);
+        println!("  {label} ({}) — {}", entry.name, entry.what());
     }
 }
 
@@ -43,21 +42,9 @@ fn print_detail(entry: &Advice) {
     let label = check_label(entry.name);
     println!("{label} ({})", entry.name);
     println!();
-    println!(
-        "{} {}",
-        i18n::t("What:", "Quoi :"),
-        i18n::t(entry.what.0, entry.what.1)
-    );
-    println!(
-        "{} {}",
-        i18n::t("Why:", "Pourquoi :"),
-        i18n::t(entry.why.0, entry.why.1)
-    );
-    println!(
-        "{} {}",
-        i18n::t("Remedy:", "Remède :"),
-        i18n::t(entry.remedy.0, entry.remedy.1)
-    );
+    println!("{} {}", i18n::t("What:", "Quoi :"), entry.what());
+    println!("{} {}", i18n::t("Why:", "Pourquoi :"), entry.why());
+    println!("{} {}", i18n::t("Remedy:", "Remède :"), entry.remedy());
 }
 
 fn print_unknown(name: &str) {

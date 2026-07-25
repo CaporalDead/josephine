@@ -211,6 +211,7 @@ crates/josephine-core/src/
   config.rs          YAML + validation
   rules.rs           moteur d'états
   messages.rs        textes notifications (faits d'alerte, stables)
+  remedy.rs          conseils par check : quoi, pourquoi, remède (EN + FR)
   voice.rs           variété des lignes de caractère (EN + FR)
   scheduler.rs       boucle démon + run_all_checks
   storage.rs         SQLite

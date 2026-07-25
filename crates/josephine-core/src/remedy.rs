@@ -5,6 +5,9 @@
 //! [`CheckResult`]. No remedy ever points back at `josephine doctor` — inside
 //! doctor that would be circular.
 
+use crate::check::{CheckResult, Severity};
+use crate::i18n::{self, Lang};
+
 /// Static per-check copy, independent of any run. Each field is an (EN, FR) pair.
 pub struct Advice {
     pub name: &'static str,
@@ -13,8 +16,25 @@ pub struct Advice {
     pub remedy: (&'static str, &'static str),
 }
 
+impl Advice {
+    /// The "what" line, in the current language.
+    pub fn what(&self) -> &'static str {
+        i18n::t(self.what.0, self.what.1)
+    }
+
+    /// The "why" line, in the current language.
+    pub fn why(&self) -> &'static str {
+        i18n::t(self.why.0, self.why.1)
+    }
+
+    /// The remedy line, in the current language.
+    pub fn remedy(&self) -> &'static str {
+        i18n::t(self.remedy.0, self.remedy.1)
+    }
+}
+
 /// The fourteen checks, in the order `explain` lists them.
-pub const ADVICE: &[Advice] = &[
+const ADVICE: &[Advice] = &[
     Advice {
         name: "cpu",
         what: (
@@ -132,7 +152,7 @@ pub const ADVICE: &[Advice] = &[
         ),
         remedy: (
             "Plug in if you can; check power settings and what keeps the GPU awake.",
-            "Branchez si possible ; vérifiez l'alimentation et les apps gourmandes.",
+            "Branchez si possible ; vérifiez l'alimentation et le GPU qui veille.",
         ),
     },
     Advice {
@@ -236,9 +256,6 @@ pub fn advice(check: &str) -> Option<&'static Advice> {
 pub fn all() -> &'static [Advice] {
     ADVICE
 }
-
-use crate::check::{CheckResult, Severity};
-use crate::i18n::{self, Lang};
 
 /// At most this many entries per check in the "what's left to do" section;
 /// beyond it, a counted overflow line. Nothing is dropped silently.
@@ -346,7 +363,21 @@ mod tests {
 
     #[test]
     fn all_fourteen_checks_have_advice() {
-        assert_eq!(ADVICE.len(), 14);
+        // `smart` is opt-in (off by default) — flip it on so every check gets
+        // built, otherwise this would only ever exercise thirteen of them.
+        let mut config = crate::config::ChecksConfig::default();
+        config.smart.enabled = true;
+        let checks = crate::checks::build_checks(&config);
+
+        assert_eq!(checks.len(), 14, "expected fourteen checks to be built");
+        for check in &checks {
+            assert!(
+                advice(check.name()).is_some(),
+                "check `{}` has no advice entry in remedy.rs — it would be \
+                 diagnosed by `doctor` but silently un-actionable",
+                check.name()
+            );
+        }
     }
 
     #[test]

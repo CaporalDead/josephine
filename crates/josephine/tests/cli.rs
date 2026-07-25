@@ -1,7 +1,6 @@
 use std::path::PathBuf;
 
 use assert_cmd::Command;
-use predicates::prelude::PredicateBooleanExt;
 use predicates::str::contains;
 
 /// A throwaway `HOME` so config/DB-touching commands never read or write the
@@ -80,12 +79,19 @@ fn fix_is_no_longer_a_subcommand() {
 
 #[test]
 fn help_does_not_offer_fix() {
-    Command::cargo_bin("josephine")
+    // A plain substring check would trip on unrelated future text ("prefix",
+    // "fixed", French "correctif"), so look for `fix` as a listed command
+    // name specifically — the first word of one of clap's command lines.
+    let assert = Command::cargo_bin("josephine")
         .unwrap()
         .arg("--help")
         .assert()
-        .success()
-        .stdout(contains("fix").not());
+        .success();
+    let stdout = String::from_utf8_lossy(&assert.get_output().stdout).into_owned();
+    let lists_fix = stdout
+        .lines()
+        .any(|line| line.split_whitespace().next() == Some("fix"));
+    assert!(!lists_fix, "help lists a `fix` command:\n{stdout}");
 }
 
 #[test]

@@ -28,8 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Seven of the fourteen remedies rewritten so none sends you back to
-  `josephine doctor` — inside doctor that was circular.
+- All fourteen remedies rewritten: seven so none sends you back to
+  `josephine doctor` — inside doctor that was circular — and seven more
+  tightened to fit the closing section's 80-column line. Every
+  `josephine explain <check>` now prints a different remedy than before
+  this release.
 
 ## [0.10.0] - 2026-07-24
 

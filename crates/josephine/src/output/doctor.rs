@@ -68,8 +68,9 @@ fn print_check_block(result: &CheckResult, config: &Config, verbose: bool) {
 
 /// The grouped closing section: every action left to take, most severe first.
 ///
-/// Prints nothing when no check is in default — a healthy machine gets no
-/// to-do list.
+/// Prints nothing when there are no remedies to show — a healthy machine
+/// gets no to-do list, and so does one where every failing check happens to
+/// have none.
 fn print_todo_section(results: &[CheckResult]) {
     let mut failing: Vec<&CheckResult> = results
         .iter()
@@ -78,7 +79,7 @@ fn print_todo_section(results: &[CheckResult]) {
     // Stable sort: Critique before Attention, insertion order kept within a band.
     failing.sort_by_key(|r| std::cmp::Reverse(r.worst_severity()));
 
-    let remedies: Vec<Remedy> = failing.iter().flat_map(|r| remedy::for_result(r)).collect();
+    let remedies: Vec<Remedy> = failing.into_iter().flat_map(remedy::for_result).collect();
     if remedies.is_empty() {
         return;
     }
