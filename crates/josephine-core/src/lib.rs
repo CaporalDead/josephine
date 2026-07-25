@@ -6,6 +6,7 @@ pub mod i18n;
 pub mod messages;
 pub mod notify;
 pub mod paths;
+pub mod remedy;
 pub mod rules;
 pub mod scheduler;
 pub mod storage;
