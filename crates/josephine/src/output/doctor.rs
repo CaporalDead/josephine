@@ -3,6 +3,7 @@ use josephine_core::check::{CheckResult, Metric, Severity};
 use josephine_core::checks::interval_for_check;
 use josephine_core::config::Config;
 use josephine_core::i18n;
+use josephine_core::remedy::{self, Remedy};
 use josephine_core::voice;
 
 use super::bars::{BAR_WIDTH, bar_plain};
@@ -29,6 +30,7 @@ pub fn print_doctor(results: &[CheckResult], config: &Config, verbose: bool) {
     for result in results {
         print_check_block(result, config, verbose);
     }
+    print_todo_section(results);
     println!();
     super::style::sober_footer(footer_hint(verbose));
 }
@@ -62,6 +64,39 @@ fn print_check_block(result: &CheckResult, config: &Config, verbose: bool) {
     for line in detail_lines(result, config, verbose) {
         println!("    {line}");
     }
+}
+
+/// The grouped closing section: every action left to take, most severe first.
+///
+/// Prints nothing when there are no remedies to show — a healthy machine
+/// gets no to-do list, and so does one where every failing check happens to
+/// have none.
+fn print_todo_section(results: &[CheckResult]) {
+    let mut failing: Vec<&CheckResult> = results
+        .iter()
+        .filter(|r| r.worst_severity() != Severity::Info)
+        .collect();
+    // Stable sort: Critique before Attention, insertion order kept within a band.
+    failing.sort_by_key(|r| std::cmp::Reverse(r.worst_severity()));
+
+    let remedies: Vec<Remedy> = failing.into_iter().flat_map(remedy::for_result).collect();
+    if remedies.is_empty() {
+        return;
+    }
+
+    println!();
+    println!(
+        "  {}",
+        i18n::t("What's left to do", "Ce qu'il reste à faire")
+    );
+    for (i, entry) in remedies.iter().enumerate() {
+        println!("    {}. {}", i + 1, entry.action);
+        if let Some(hint) = &entry.hint {
+            println!("       {hint}");
+        }
+    }
+    println!();
+    println!(" {}", voice::remedy_hands_off());
 }
 
 fn footer_hint(verbose: bool) -> &'static str {
