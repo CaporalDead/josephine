@@ -22,7 +22,9 @@ The work is therefore split in two increments, because producing images is itera
 - **Increment 1 (this spec):** the visuals. Assets, formats, placement, the SVG's retirement.
 - **Increment 2 (later):** the words. Site copy, the CLI's `about` line and the two integration tests pinning it, both READMEs, `CLAUDE.md`'s product rule, and the social previews.
 
-Increment 1 deliberately leaves every "ange gardien" string in place. The page will briefly show a fox spirit next to angel wording; that is a known, bounded intermediate state, resolved by increment 2 before either ships.
+Increment 1 deliberately leaves every "ange gardien" string in place. The page will briefly show a fox spirit next to angel wording; that is a known, bounded intermediate state.
+
+The owner ruled on 2026-07-26 that increment 1 merges — and therefore ships — alone. `.github/workflows/pages.yml` deploys the site on every push to `main` that touches `site/**`, so this is not a theoretical intermediate state: the live site will show a fox spirit beside copy that still calls her a guardian angel from the moment this increment merges until increment 2 lands and reconciles the wording. That gap is accepted, not avoided, because rewriting the copy correctly depends on the character being settled first.
 
 ---
 
@@ -51,7 +53,7 @@ Two admitted exceptions, both pictograms rather than information: the `>_` promp
 
 `why.png` — shipped as `josephine-veille` — **breaks this rule, knowingly.** Its mock dashboard renders "UPOATES" for UPDATES, "all Funning" for all running, "avalbbie" for available, and "15G / 310" for 18G / 31G. The handwritten sticky note below the screen is pure scribble.
 
-The owner ruled on 2026-07-26 to ship it anyway. The reasoning: served at roughly 416 CSS pixels, those cells are small enough that no one reads them in passing — the defect surfaces only on deliberate zoom or a high-density display — and this is the third generation of the image to fail on exactly this, with no sign that another attempt would fix it.
+The owner ruled on 2026-07-26 to ship it anyway. The reasoning: served at roughly 336 CSS pixels, those cells are small enough that no one reads them in passing — the defect surfaces only on deliberate zoom or a high-density display — and this is the third generation of the image to fail on exactly this, with no sign that another attempt would fix it.
 
 It is recorded here rather than left silent so that a future reader finds a decision and not an oversight. The rule above still stands for every future asset; this is the exception that proves someone looked.
 
@@ -97,6 +99,8 @@ The real CLI readout (`.term`) stays exactly where it is, below the hero block: 
 
 **"How she works"** — the `.how__art` figure. The `m::guardian()` SVG is **deleted** from `macros.html`, comment, halo and wings included, and its `.guardian` rule leaves `main.scss`. `josephine-veille` takes the slot: it is the explanatory image, showing her reading a dashboard, and its landscape framing suits the two-column grid beside the `.flow` nodes.
 
+This placement contradicts the section's own lede, which reads "No dashboards. No graphs." — the illustration shows her reading exactly that. The owner ruled on 2026-07-26 that `josephine-veille` stays here anyway: the contradiction is real but defensible, since the dashboard is what *she* watches so the visitor doesn't have to, and increment 2's copy pass will reconcile the wording. Swapping it with `josephine-bureau` (the desk scene, currently in the checks-grid slot) was considered and rejected — at that slot's 34rem width, `josephine-veille`'s already-garbled mock-dashboard labels (see the recorded derogation above) would become markedly more legible, which is worse, not better.
+
 **Checks grid** — `josephine-bureau` sits **above** the fourteen check cards, full width and centred, as the section's opening image. Not beside them: the grid is already a dense multi-column block, and squeezing an illustration into it would either crush the image or force the cards into a column too narrow for their labels. She is surrounded by her machine, arms open: "here is what she watches."
 
 **Footer** — `josephine-repos`. The page ends on her asleep on the tower, which is the emotional close the product's promise deserves.
@@ -115,9 +119,18 @@ Alt text is written in **English and French**, like every other string on the si
 
 ## Page weight
 
-The site currently weighs tens of KB. Four illustrations take it to roughly **505 KB** on a wide screen and **294 KB** on a phone. That is a tenfold increase, stated plainly so it is a decision rather than a discovery.
+The site currently weighs tens of KB. Four illustrations add roughly a tenfold increase — stated plainly so it is a decision rather than a discovery. What decides the size of that increase is device pixel ratio, not viewport width: the expensive case is a modern phone on mobile data, not a wide desktop monitor, which is the opposite of how this budget first read.
 
-What makes it acceptable: only the hero portrait is on the critical path, at **96 KB**. The other three load as the visitor scrolls. First paint costs one image, not four.
+Measured (full scroll-through, one page load each):
+
+| profile | fetched |
+|---|---|
+| phone 390 px, DPR 3 | 508 KB |
+| phone 390 px, DPR 2 | 322 KB |
+| desktop 1440 px, DPR 1 | 296 KB |
+| desktop 1440 px, DPR 2 | 438 KB |
+
+What makes it acceptable: only the hero portrait is on the critical path, at **96 KB** worst case. The other three load as the visitor scrolls. First paint costs one image, not four.
 
 ---
 
