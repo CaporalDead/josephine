@@ -47,6 +47,14 @@ The page already renders the fourteen checks as real HTML: exact names, translat
 
 Two admitted exceptions, both pictograms rather than information: the `>_` prompt on her forehead and lantern, and the "Zzz…" in `footer.png`. Neither can rot or become false.
 
+### One recorded derogation
+
+`why.png` — shipped as `josephine-veille` — **breaks this rule, knowingly.** Its mock dashboard renders "UPOATES" for UPDATES, "all Funning" for all running, "avalbbie" for available, and "15G / 310" for 18G / 31G. The handwritten sticky note below the screen is pure scribble.
+
+The owner ruled on 2026-07-26 to ship it anyway. The reasoning: served at roughly 416 CSS pixels, those cells are small enough that no one reads them in passing — the defect surfaces only on deliberate zoom or a high-density display — and this is the third generation of the image to fail on exactly this, with no sign that another attempt would fix it.
+
+It is recorded here rather than left silent so that a future reader finds a decision and not an oversight. The rule above still stands for every future asset; this is the exception that proves someone looked.
+
 ### Formats and sizes
 
 Only **WebP** enters the repository. No PNG fallback — WebP has been supported by every targeted browser since Safari 14 (2020).
