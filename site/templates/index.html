@@ -15,21 +15,31 @@
   </div>
 
   <div class="wrap hero">
-    <p class="eyebrow">{{ section.extra.eyebrow }}</p>
-    <h1><span class="star">✦</span> Joséphine</h1>
-    <p class="tagline">{{ section.extra.tagline }}</p>
-    <p class="lede">{{ section.extra.lede }}</p>
-    <div class="cta">
-      <a class="button button--primary" href="#install">{{ section.extra.cta2 }}</a>
-      <a class="button" href="{{ config.extra.repo_url }}">{{ section.extra.cta }}</a>
+    <div class="hero__text">
+      <p class="eyebrow">{{ section.extra.eyebrow }}</p>
+      <h1><span class="star">✦</span> Joséphine</h1>
+      <p class="tagline">{{ section.extra.tagline }}</p>
+      <p class="lede">{{ section.extra.lede }}</p>
+      <div class="cta">
+        <a class="button button--primary" href="#install">{{ section.extra.cta2 }}</a>
+        <a class="button" href="{{ config.extra.repo_url }}">{{ section.extra.cta }}</a>
+      </div>
+      <ul class="trust" aria-label="{% if fr %}Principes{% else %}Principles{% endif %}">
+        <li>{% if fr %}Pas de cloud{% else %}No cloud{% endif %}</li>
+        <li>{% if fr %}Pas de télémétrie{% else %}No telemetry{% endif %}</li>
+        <li>{% if fr %}Pas de compte{% else %}No account{% endif %}</li>
+        <li>{% if fr %}Écrite en Rust{% else %}Written in Rust{% endif %}</li>
+        <li>MIT / Apache-2.0</li>
+      </ul>
     </div>
-    <ul class="trust" aria-label="{% if fr %}Principes{% else %}Principles{% endif %}">
-      <li>{% if fr %}Pas de cloud{% else %}No cloud{% endif %}</li>
-      <li>{% if fr %}Pas de télémétrie{% else %}No telemetry{% endif %}</li>
-      <li>{% if fr %}Pas de compte{% else %}No account{% endif %}</li>
-      <li>{% if fr %}Écrite en Rust{% else %}Written in Rust{% endif %}</li>
-      <li>MIT / Apache-2.0</li>
-    </ul>
+
+    <figure class="hero__art">
+      <img class="art" src="{{ get_url(path='josephine-portrait-768.webp') }}"
+           srcset="{{ get_url(path='josephine-portrait-512.webp') }} 512w, {{ get_url(path='josephine-portrait-768.webp') }} 768w"
+           sizes="(max-width: 48rem) 16rem, 22rem"
+           width="768" height="768" loading="eager" decoding="async"
+           alt="{% if fr %}Joséphine, petite renarde gardienne en kimono sombre, une flamme violette dans chaque paume{% else %}Joséphine, a small fox guardian in a dark kimono, a violet flame in each palm{% endif %}">
+    </figure>
 
     <div class="term" role="img" aria-label="{{ section.extra.readout_alt }}">
       <div class="term__bar"><span class="term__dot"></span><span class="term__dot"></span><span class="term__dot"></span><span class="term__title">josephine</span></div>
@@ -180,7 +190,14 @@ Your machine, watched over.
   </p>
 
   <div class="how">
-    <figure class="how__art">{{ m::guardian() }}<figcaption class="how__cap">{% if fr %}Envoyée veiller sur une machine. La vôtre.{% else %}Sent to watch over one machine. Yours.{% endif %}</figcaption></figure>
+    <figure class="how__art">
+      <img class="art" src="{{ get_url(path='josephine-veille-1024.webp') }}"
+           srcset="{{ get_url(path='josephine-veille-768.webp') }} 768w, {{ get_url(path='josephine-veille-1024.webp') }} 1024w"
+           sizes="(max-width: 48rem) 18rem, 21rem"
+           width="1024" height="683" loading="lazy" decoding="async"
+           alt="{% if fr %}Joséphine, petite renarde gardienne, lit un tableau de bord sur l'écran d'un ordinateur, une lanterne à la main{% else %}Joséphine, a small fox guardian, reads a dashboard on a computer screen, lantern in hand{% endif %}">
+      <figcaption class="how__cap">{% if fr %}Envoyée veiller sur une machine. La vôtre.{% else %}Sent to watch over one machine. Yours.{% endif %}</figcaption>
+    </figure>
     <div class="flow" role="list">
       <div class="flow__node" role="listitem"><span class="flow__k">{% if fr %}Votre machine{% else %}Your machine{% endif %}</span><span class="flow__v">/proc · /sys · systemd · journal</span></div>
       <div class="flow__arrow" aria-hidden="true">↓</div>
@@ -208,6 +225,14 @@ Your machine, watched over.
     The way she sees it, she was sent here for one job — your machine — so she doesn't cut corners: fourteen checks, each independent, configurable, and read straight from the kernel and <code>/sys</code>. Together they cover the slow, quiet ways a machine drifts.
     {%- endif -%}
   </p>
+
+  <figure class="checks__art">
+    <img class="art" src="{{ get_url(path='josephine-bureau-1024.webp') }}"
+         srcset="{{ get_url(path='josephine-bureau-768.webp') }} 768w, {{ get_url(path='josephine-bureau-1024.webp') }} 1024w"
+         sizes="(max-width: 48rem) 90vw, 34rem"
+         width="1024" height="683" loading="lazy" decoding="async"
+         alt="{% if fr %}Joséphine derrière un ordinateur de bureau, bras ouverts, entourée de flammes violettes{% else %}Joséphine behind a desktop computer, arms open, surrounded by violet flames{% endif %}">
+  </figure>
 
   <div class="checks">
     <div class="check"><span class="check__ic">{{ m::icon(name="cpu") }}</span><div><h3>CPU</h3><p>{% if fr %}Charge soutenue, process emballés{% else %}Sustained load, runaway processes{% endif %}</p></div></div>

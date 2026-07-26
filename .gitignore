@@ -1,4 +1,5 @@
 /target/
 **/*.rs.bk
 /site/public/
+/site/static/*.png
 /.claude/worktrees/
