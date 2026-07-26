@@ -1,8 +1,8 @@
 class Josephine < Formula
   desc "Your computer's guardian angel — a local Linux system watcher"
   homepage "https://github.com/systm-d/josephine"
-  url "https://github.com/systm-d/josephine/archive/refs/tags/v.0.10.0.tar.gz"
-  sha256 "d854a44a939759a629d0469cd13a0ef758bde4fb7aaa2b311766e30aeae0dd6e"
+  url "https://github.com/systm-d/josephine/archive/refs/tags/v0.11.0.tar.gz"
+  sha256 "59df5ed30e3a5a32cf48362b31b9be4a19c1eac4fd356b03e94ffa5ba9c54161"
   license "MIT OR Apache-2.0"
   head "https://github.com/systm-d/josephine.git", branch: "main"
 
