@@ -73,6 +73,18 @@
       nixosModules.default = modules.nixos;
       homeManagerModules.default = modules.homeManager;
 
+      # VM test of the NixOS module (needs KVM, so `nix flake check` runs it on
+      # a Linux host with /dev/kvm).
+      checks = forAllSystems (
+        { pkgs, ... }:
+        {
+          nixos-module = import ./packaging/nix/nixos-test.nix {
+            inherit pkgs;
+            module = self.nixosModules.default;
+          };
+        }
+      );
+
       formatter = forAllSystems ({ pkgs, ... }: pkgs.nixfmt);
     };
 }
