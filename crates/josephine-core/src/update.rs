@@ -142,6 +142,7 @@ pub enum InstallChannel {
     Pacman,
     Cargo,
     Homebrew,
+    Nix,
     Tarball,
     Unknown,
 }
@@ -195,6 +196,8 @@ fn channel_from_path(path: &str) -> Option<InstallChannel> {
         Some(InstallChannel::Cargo)
     } else if path.contains("linuxbrew") || path.contains("/Cellar/") {
         Some(InstallChannel::Homebrew)
+    } else if path.starts_with("/nix/store/") {
+        Some(InstallChannel::Nix)
     } else {
         None
     }
@@ -243,6 +246,15 @@ pub fn install_plan(channel: InstallChannel, package: &Path) -> InstallPlan {
             crate::i18n::t(
                 "With Homebrew: `brew upgrade josephine`.",
                 "Via Homebrew : `brew upgrade josephine`.",
+            )
+            .into(),
+        ),
+        // A Nix install lives in the read-only /nix/store: nothing to install in
+        // place. The update comes from the user's own configuration.
+        InstallChannel::Nix => InstallPlan::Manual(
+            crate::i18n::t(
+                "On Nix, updates go through your configuration: bump the `josephine` flake input (or your channel) and rebuild.",
+                "Sur Nix, la mise à jour passe par votre configuration : actualisez l'entrée de flake `josephine` (ou votre canal), puis reconstruisez.",
             )
             .into(),
         ),
@@ -371,6 +383,10 @@ mod tests {
             channel_from_path("/home/linuxbrew/.linuxbrew/bin/josephine"),
             Some(InstallChannel::Homebrew)
         );
+        assert_eq!(
+            channel_from_path("/nix/store/abcd1234-josephine-0.11.0/bin/josephine"),
+            Some(InstallChannel::Nix)
+        );
         assert_eq!(channel_from_path("/usr/bin/josephine"), None);
     }
 
@@ -394,6 +410,12 @@ mod tests {
         ));
         assert!(matches!(
             install_plan(InstallChannel::Pacman, Path::new("")),
+            InstallPlan::Manual(_)
+        ));
+        // A Nix install is immutable, so it can only ever be a manual pointer
+        // back to the user's configuration.
+        assert!(matches!(
+            install_plan(InstallChannel::Nix, Path::new("")),
             InstallPlan::Manual(_)
         ));
     }
