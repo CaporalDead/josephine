@@ -2,6 +2,13 @@
 //! is a classic early sign of a failing disk or corruption. Reads
 //! `/proc/mounts`; degrades gracefully if it can't be read (should never
 //! happen on Linux, but we don't want a false alarm if it ever does).
+//!
+//! Immutable systems mount some paths read-only *by design* — NixOS keeps
+//! `/nix/store` read-only through `boot.readOnlyNixStore`, so it shows up in
+//! `/proc/mounts` as a read-only bind mount of a normally-writable filesystem
+//! (e.g. `ext4`). Those mount points are skipped via the configurable
+//! `ignore_mounts` allowlist so the check stays quiet where read-only is
+//! expected.
 
 use anyhow::Result;
 
@@ -37,7 +44,8 @@ impl Check for FilesystemCheck {
         let Ok(content) = std::fs::read_to_string("/proc/mounts") else {
             return Ok(unavailable());
         };
-        Ok(build_result(&find_readonly_mounts(&content), &self.config))
+        let flagged = find_readonly_mounts(&content, &self.config.ignore_mounts);
+        Ok(build_result(&flagged, &self.config))
     }
 }
 
@@ -103,12 +111,16 @@ fn unavailable() -> CheckResult {
 /// Parse `/proc/mounts` (fields: device, mount point, fstype, options, …) and
 /// return the mount points that are unexpectedly read-only: a real
 /// read-write-class filesystem (not an inherently read-only image type) whose
-/// options contain the whole-word `ro` flag.
+/// options contain the whole-word `ro` flag, and that isn't listed in
+/// `ignore_mounts` (paths that are read-only by design, like NixOS's
+/// `/nix/store`).
 ///
 /// We filter by fstype only — not by mount path. Pseudo filesystems (`proc`,
 /// `sysfs`, `tmpfs`, …) never appear in [`WRITABLE_FSTYPES`], so a blanket
-/// `/run` prefix skip would miss USB sticks under `/run/media/…`.
-fn find_readonly_mounts(content: &str) -> Vec<String> {
+/// `/run` prefix skip would miss USB sticks under `/run/media/…`. The
+/// `ignore_mounts` allowlist is matched on the exact mount point, so it
+/// suppresses `/nix/store` without hiding a genuine failure elsewhere.
+fn find_readonly_mounts(content: &str, ignore_mounts: &[String]) -> Vec<String> {
     content
         .lines()
         .filter_map(|line| {
@@ -120,6 +132,9 @@ fn find_readonly_mounts(content: &str) -> Vec<String> {
             let fstype = fields[2];
             let options = fields[3];
             if !WRITABLE_FSTYPES.contains(&fstype) {
+                return None;
+            }
+            if ignore_mounts.iter().any(|m| m == mount_point) {
                 return None;
             }
             has_ro_option(options).then(|| mount_point.to_string())
@@ -168,19 +183,19 @@ proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
 
     #[test]
     fn flags_a_real_readonly_remount() {
-        let flagged = find_readonly_mounts(ONE_READONLY);
+        let flagged = find_readonly_mounts(ONE_READONLY, &[]);
         assert_eq!(flagged, vec!["/home".to_string()]);
     }
 
     #[test]
     fn all_read_write_flags_nothing() {
-        let flagged = find_readonly_mounts(ALL_READWRITE);
+        let flagged = find_readonly_mounts(ALL_READWRITE, &[]);
         assert!(flagged.is_empty());
     }
 
     #[test]
     fn readonly_squashfs_snap_is_not_flagged() {
-        let flagged = find_readonly_mounts(SNAP_ONLY);
+        let flagged = find_readonly_mounts(SNAP_ONLY, &[]);
         assert!(flagged.is_empty());
     }
 
@@ -190,21 +205,67 @@ proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
 
     #[test]
     fn readonly_usb_under_run_media_is_flagged() {
-        let flagged = find_readonly_mounts(USB_READONLY);
+        let flagged = find_readonly_mounts(USB_READONLY, &[]);
         assert_eq!(flagged, vec!["/run/media/alice/USB".to_string()]);
     }
 
     #[test]
     fn one_readonly_mount_is_critical() {
-        let result = build_result(&find_readonly_mounts(ONE_READONLY), &config());
+        let result = build_result(&find_readonly_mounts(ONE_READONLY, &[]), &config());
         assert_eq!(result.worst_severity(), crate::check::Severity::Critique);
         assert_eq!(result.status_value.as_deref(), Some("1 read-only: “/home”"));
     }
 
     #[test]
     fn all_writable_is_info() {
-        let result = build_result(&find_readonly_mounts(ALL_READWRITE), &config());
+        let result = build_result(&find_readonly_mounts(ALL_READWRITE, &[]), &config());
         assert_eq!(result.worst_severity(), crate::check::Severity::Info);
         assert_eq!(result.status_value.as_deref(), Some("all read-write"));
+    }
+
+    // A NixOS host with `boot.readOnlyNixStore` (the default): the root
+    // filesystem is read-write, but `/nix/store` is a read-only bind mount of
+    // that same `ext4` device — exactly the shape that used to false-alarm.
+    const NIXOS_MOUNTS: &str = "\
+sysfs /sys sysfs rw,nosuid,nodev,noexec,relatime 0 0
+proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
+/dev/sda1 / ext4 rw,relatime 0 0
+/dev/sda1 /nix/store ext4 ro,relatime 0 0
+";
+
+    #[test]
+    fn nix_store_readonly_is_not_flagged_by_default() {
+        let flagged = find_readonly_mounts(NIXOS_MOUNTS, &config().ignore_mounts);
+        assert!(flagged.is_empty(), "flagged: {flagged:?}");
+    }
+
+    #[test]
+    fn nix_store_is_flagged_without_the_allowlist() {
+        // Proves the store really is a read-only, writable-fstype mount; only
+        // the allowlist keeps it quiet.
+        let flagged = find_readonly_mounts(NIXOS_MOUNTS, &[]);
+        assert_eq!(flagged, vec!["/nix/store".to_string()]);
+    }
+
+    #[test]
+    fn a_real_remount_surfaces_even_next_to_the_ignored_nix_store() {
+        // `/home` genuinely went read-only: it must still surface even though
+        // `/nix/store` (also read-only) is ignored.
+        let mounts = format!("{NIXOS_MOUNTS}/dev/sda2 /home ext4 ro,relatime 0 0\n");
+        let flagged = find_readonly_mounts(&mounts, &config().ignore_mounts);
+        assert_eq!(flagged, vec!["/home".to_string()]);
+    }
+
+    #[test]
+    fn custom_ignore_mount_is_honoured() {
+        let mounts = "/dev/sda3 /data ext4 ro,relatime 0 0\n";
+        let ignore = vec!["/data".to_string()];
+        assert!(find_readonly_mounts(mounts, &ignore).is_empty());
+        assert_eq!(find_readonly_mounts(mounts, &[]), vec!["/data".to_string()]);
+    }
+
+    #[test]
+    fn default_config_ignores_the_nix_store() {
+        assert!(config().ignore_mounts.iter().any(|m| m == "/nix/store"));
     }
 }

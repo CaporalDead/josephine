@@ -19,7 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `/nix/store` install and points you back to your configuration instead of
   trying to self-install into the read-only store.
 
-## [0.11.0] - 2026-07-25
+### Fixed
+
+- **The `filesystem` check no longer false-alarms on NixOS.** NixOS keeps
+  `/nix/store` read-only (via `boot.readOnlyNixStore`), so it shows up in
+  `/proc/mounts` as a read-only bind mount of a normally-writable filesystem
+  (`ext4`, `btrfs`, …) — exactly the shape the check reads as a disk silently
+  going read-only. Mount points that are read-only by design are now skipped
+  through a configurable `checks.filesystem.ignore_mounts` allowlist, which
+  defaults to `/nix/store` and `/nix/.ro-store`; extend it for other immutable
+  systems (for example `/usr` on an ostree-based distro).
 
 ### Added
 

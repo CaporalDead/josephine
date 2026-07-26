@@ -171,6 +171,12 @@ pub struct FilesystemCheckConfig {
     pub warning: f64,
     #[serde(default = "default_filesystem_critical")]
     pub critical: f64,
+    /// Mount points that are read-only *by design* and must never be flagged.
+    /// Defaults to the immutable Nix store (NixOS mounts `/nix/store` read-only
+    /// via `boot.readOnlyNixStore`); extend it for other immutable systems
+    /// (e.g. add `/usr` on an ostree-based distro).
+    #[serde(default = "default_filesystem_ignore_mounts")]
+    pub ignore_mounts: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -282,6 +288,13 @@ fn default_filesystem_warning() -> f64 {
 
 fn default_filesystem_critical() -> f64 {
     1.0
+}
+
+/// Read-only mounts that are normal on immutable systems, so they don't raise
+/// a false alarm. NixOS keeps `/nix/store` read-only by default; some setups
+/// also expose the store's lower layer as `/nix/.ro-store`.
+fn default_filesystem_ignore_mounts() -> Vec<String> {
+    vec!["/nix/store".to_string(), "/nix/.ro-store".to_string()]
 }
 
 fn default_timesync_interval() -> u64 {
@@ -437,6 +450,7 @@ impl Default for FilesystemCheckConfig {
             interval_secs: default_filesystem_interval(),
             warning: default_filesystem_warning(),
             critical: default_filesystem_critical(),
+            ignore_mounts: default_filesystem_ignore_mounts(),
         }
     }
 }
