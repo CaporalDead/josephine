@@ -618,6 +618,11 @@ footer {
 }
 @media (max-width: 48rem) {
   .hero { grid-template-columns: 1fr; }
+  /* Collapsed to one column, .term's auto side-margins (kept for the
+     desktop centering above) switch it to shrink-to-fit sizing, and the
+     un-wrappable <pre> readout is wider than narrow viewports — pinning
+     the width back to 100% stops it overflowing the page. */
+  .hero .term { width: 100%; margin-left: 0; margin-right: 0; }
   .hero__text { text-align: center; }
   .hero__text .tagline, .hero__text .lede { margin-left: auto; margin-right: auto; }
   .hero__text .cta, .hero__text .trust { justify-content: center; }
