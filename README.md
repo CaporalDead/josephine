@@ -188,6 +188,7 @@ with a gradient.
 - [Architecture](docs/ARCHITECTURE.md) · [Development](docs/DEVELOPMENT.md) · [Current state](docs/CURRENT_STATE.md) · [Roadmap](docs/ROADMAP.md)
 - [Contributing](CONTRIBUTING.md) · [Conventions](CONVENTIONS.md) · [Code of Conduct](CODE_OF_CONDUCT.md) · [Security](SECURITY.md)
 - Website: <https://systm-d.github.io/josephine/>
+- En français : [README.fr.md](README.fr.md)
 
 ## Development
 

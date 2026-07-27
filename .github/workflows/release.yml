@@ -1,12 +1,12 @@
 name: Release
 
-# Release Linux : construit le binaire, le tarball, les paquets .deb et .rpm,
-# rend la formule Homebrew (tap) et le PKGBUILD AUR, puis agrège le tout dans
-# une release GitHub. Joséphine est Linux-native (systemd, /sys, /proc,
-# libnotify) — pas de binaires macOS/Windows.
+# Linux release: builds the binary, the tarball, the .deb and .rpm packages,
+# renders the Homebrew formula (tap) and the AUR PKGBUILD, then aggregates it
+# all into a GitHub release. Joséphine is Linux-native (systemd, /sys, /proc,
+# libnotify) — no macOS/Windows binaries.
 #
-# Déclenché par un tag `v*.*.*` (crée la release + met à jour le tap) ou
-# manuellement via workflow_dispatch (build + artefacts uniquement).
+# Triggered by a `v*.*.*` tag (creates the release + updates the tap) or
+# manually via workflow_dispatch (build + artifacts only).
 
 on:
   push:
@@ -21,10 +21,10 @@ env:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Binaire natif Linux (x86_64) : tarball + sa somme sha256.
+  # Native Linux binary (x86_64): tarball + its sha256 sum.
   # ---------------------------------------------------------------------------
   binaries:
-    name: Binaire linux-x86_64
+    name: linux-x86_64 binary
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v7
@@ -32,7 +32,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: cargo build --release
         run: cargo build --release --locked -p josephine
-      - name: Empaqueter le tarball + sha256
+      - name: Package the tarball + sha256
         run: |
           staging="josephine-linux-x86_64"
           mkdir "$staging"
@@ -48,11 +48,11 @@ jobs:
             josephine-linux-x86_64.tar.gz.sha256
 
   # ---------------------------------------------------------------------------
-  # Paquet Debian / Ubuntu (.deb) + sha256 (companion attendu par `josephine
-  # update` pour vérifier l'intégrité).
+  # Debian / Ubuntu package (.deb) + sha256 (companion file expected by
+  # `josephine update` to verify integrity).
   # ---------------------------------------------------------------------------
   debian:
-    name: Paquet Debian (.deb)
+    name: Debian package (.deb)
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v7
@@ -60,11 +60,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: cargo build --release
         run: cargo build --release --locked -p josephine
-      - name: Construire le .deb
+      - name: Build the .deb
         run: |
           cargo install cargo-deb --locked
           cargo deb -p josephine --no-build
-      - name: Somme sha256
+      - name: sha256 sum
         run: |
           for pkg in target/debian/*.deb; do
             ( cd "$(dirname "$pkg")" && sha256sum "$(basename "$pkg")" | tee "$(basename "$pkg").sha256" )
@@ -77,10 +77,10 @@ jobs:
             target/debian/*.deb.sha256
 
   # ---------------------------------------------------------------------------
-  # Paquet Fedora / RHEL (.rpm) + sha256.
+  # Fedora / RHEL package (.rpm) + sha256.
   # ---------------------------------------------------------------------------
   fedora:
-    name: Paquet Fedora (.rpm)
+    name: Fedora package (.rpm)
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v7
@@ -88,11 +88,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: cargo build --release
         run: cargo build --release --locked -p josephine
-      - name: Construire le .rpm
+      - name: Build the .rpm
         run: |
           cargo install cargo-generate-rpm --locked
           cargo generate-rpm -p crates/josephine
-      - name: Somme sha256
+      - name: sha256 sum
         run: |
           for pkg in target/generate-rpm/*.rpm; do
             ( cd "$(dirname "$pkg")" && sha256sum "$(basename "$pkg")" | tee "$(basename "$pkg").sha256" )
@@ -105,24 +105,24 @@ jobs:
             target/generate-rpm/*.rpm.sha256
 
   # ---------------------------------------------------------------------------
-  # Release GitHub (uniquement sur tag) : agrège tous les artefacts et rend la
-  # formule Homebrew + le PKGBUILD AUR à partir des gabarits packaging/. Les
-  # deux recettes bâtissent depuis la même archive source, donc même sha256.
-  # Gabarit absent (tag antérieur à son ajout) : on saute ce rendu sans faire
-  # échouer la release (binaires/deb/rpm restent publiés).
+  # GitHub release (on tags only): aggregates every artifact and renders the
+  # Homebrew formula + the AUR PKGBUILD from the packaging/ templates. Both
+  # recipes build from the same source archive, hence the same sha256.
+  # Missing template (tag predating its addition): that rendering is skipped
+  # without failing the release (binaries/deb/rpm are still published).
   # ---------------------------------------------------------------------------
   release:
-    name: Publier la release
+    name: Publish the release
     needs: [binaries, debian, fedora]
     runs-on: ubuntu-22.04
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/checkout@v7
-      - name: Télécharger les artefacts
+      - name: Download the artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-      - name: Rendre la formule Homebrew et le PKGBUILD AUR
+      - name: Render the Homebrew formula and the AUR PKGBUILD
         env:
           GH_REPO: ${{ github.repository }}
           TAG: ${{ github.ref_name }}
@@ -137,10 +137,10 @@ jobs:
               -e "s|sha256 \"[0-9a-f]*\"|sha256 \"${sha}\"|" \
               -e "/# Placeholder: release.yml/d" \
               packaging/homebrew/josephine.rb > josephine.rb
-            echo "Rendu josephine.rb pour ${TAG} (sha256 ${sha}) :"
+            echo "Rendered josephine.rb for ${TAG} (sha256 ${sha}):"
             cat josephine.rb
           else
-            echo "packaging/homebrew/josephine.rb absent — formule Homebrew ignorée."
+            echo "packaging/homebrew/josephine.rb missing — skipping the Homebrew formula."
           fi
 
           if [ -f packaging/aur/PKGBUILD ]; then
@@ -150,12 +150,12 @@ jobs:
               -e "/# Fill with the real checksum/d" \
               -e "/# release tarball's sha256/d" \
               packaging/aur/PKGBUILD > PKGBUILD
-            echo "Rendu PKGBUILD pour ${TAG} (sha256 ${sha}) :"
+            echo "Rendered PKGBUILD for ${TAG} (sha256 ${sha}):"
             cat PKGBUILD
           else
-            echo "packaging/aur/PKGBUILD absent — PKGBUILD AUR ignoré."
+            echo "packaging/aur/PKGBUILD missing — skipping the AUR PKGBUILD."
           fi
-      - name: Publier la release
+      - name: Publish the release
         uses: softprops/action-gh-release@v3
         with:
           generate_release_notes: true
@@ -165,33 +165,33 @@ jobs:
             PKGBUILD
 
   # ---------------------------------------------------------------------------
-  # Homebrew tap : rend Formula/josephine.rb sur la branche par défaut à partir
-  # du gabarit packaging/homebrew/josephine.rb (source de vérité unique, même
-  # sed que le rendu de l'asset ci-dessus). Installation utilisateur :
+  # Homebrew tap: renders Formula/josephine.rb on the default branch from the
+  # packaging/homebrew/josephine.rb template (single source of truth, same sed
+  # as the asset rendering above). User installation:
   #   brew tap systm-d/josephine https://github.com/systm-d/josephine
   #   brew install josephine
   # ---------------------------------------------------------------------------
   homebrew:
-    name: Mettre à jour la formule Homebrew (tap)
+    name: Update the Homebrew formula (tap)
     needs: release
     runs-on: ubuntu-22.04
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
     steps:
-      # La branche par défaut (le tag est en HEAD détaché) : le tap sert
-      # Formula/josephine.rb depuis la tête de branche, il faut l'y mettre à jour.
+      # The default branch (the tag is a detached HEAD): the tap serves
+      # Formula/josephine.rb from the branch head, so it must be updated there.
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
-      - name: Rendre et committer la formule
+      - name: Render and commit the formula
         env:
           GH_REPO: ${{ github.repository }}
           TAG: ${{ github.ref_name }}
         run: |
           if [ ! -f packaging/homebrew/josephine.rb ]; then
-            echo "packaging/homebrew/josephine.rb absent sur la branche par défaut — étape ignorée."
+            echo "packaging/homebrew/josephine.rb missing on the default branch — skipping."
             exit 0
           fi
           version="${TAG#v}"
@@ -206,23 +206,23 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add Formula/josephine.rb
-          git commit -m "homebrew: josephine ${version}" || { echo "Formule déjà à jour"; exit 0; }
+          git commit -m "homebrew: josephine ${version}" || { echo "Formula already up to date"; exit 0; }
           git push
 
   # ---------------------------------------------------------------------------
-  # crates.io : publication opt-in. Activée en réglant la variable de dépôt
-  # PUBLISH_CRATES=true et le secret CARGO_REGISTRY_TOKEN ; sinon ce job est
-  # ignoré. josephine-core est publié avant josephine (dépendance de chemin).
+  # crates.io: opt-in publication. Enabled by setting the repository variable
+  # PUBLISH_CRATES=true and the CARGO_REGISTRY_TOKEN secret; otherwise this job
+  # is skipped. josephine-core is published before josephine (path dependency).
   # ---------------------------------------------------------------------------
   crates-io:
-    name: Publier sur crates.io
+    name: Publish to crates.io
     needs: [binaries]
     if: ${{ vars.PUBLISH_CRATES == 'true' && startsWith(github.ref, 'refs/tags/v') }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
-      - name: Publier josephine-core puis josephine
+      - name: Publish josephine-core, then josephine
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: |
