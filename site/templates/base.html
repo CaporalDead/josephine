@@ -17,8 +17,8 @@
     {% block content %}{% endblock content %}
     <footer>
       <img class="foot__art" src="{{ get_url(path='josephine-repos-512.webp') }}"
-           srcset="{{ get_url(path='josephine-repos-384.webp') }} 384w, {{ get_url(path='josephine-repos-512.webp') }} 512w"
-           sizes="14rem" width="512" height="512" loading="lazy" decoding="async"
+           srcset="{{ get_url(path='josephine-repos-384.webp') }} 384w, {{ get_url(path='josephine-repos-512.webp') }} 512w, {{ get_url(path='josephine-repos-768.webp') }} 768w"
+           sizes="20rem" width="512" height="512" loading="lazy" decoding="async"
            alt="{% if lang == 'fr' %}Joséphine endormie sur une tour d'ordinateur{% else %}Joséphine asleep on a computer tower{% endif %}">
       <p class="foot__mark"><span class="star">✦</span> 100% local <span class="sep">·</span> Linux <span class="sep">·</span> {% if lang == 'fr' %}open source{% else %}open source{% endif %}</p>
       <nav class="foot__nav" aria-label="{% if lang == 'fr' %}Liens{% else %}Links{% endif %}">

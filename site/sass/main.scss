@@ -436,16 +436,16 @@ footer {
 /* ---------- how she works: illustration + flow ---------- */
 .how {
   display: grid;
-  grid-template-columns: 1fr 1.1fr;
+  grid-template-columns: 1.15fr 1fr;
   gap: 2.4rem;
   align-items: center;
   margin-top: 1.8rem;
 }
-.how__art { display: grid; place-items: center; }
+.how__art { display: grid; place-items: center; margin: 0; }
 .art { width: 100%; height: auto; display: block; }
-.how__art .art { max-width: 26rem; }
+.how__art .art { max-width: 30rem; }
 .checks__art { margin: 1.8rem auto 0; max-width: 34rem; }
-.foot__art { width: 14rem; height: auto; display: block; margin: 0 auto 1.4rem; opacity: 0.9; }
+.foot__art { width: 20rem; height: auto; display: block; margin: 0 auto 1.4rem; opacity: 0.9; }
 
 .flow { display: grid; gap: 0; justify-items: stretch; }
 .flow__node {
