@@ -27,6 +27,8 @@ sudo rpm -i josephine-*.x86_64.rpm
 
 Prefer to build it yourself? `cargo install --git https://github.com/systm-d/josephine josephine` (Rust 1.85+). On Linux with Homebrew, `brew tap systm-d/josephine https://github.com/systm-d/josephine && brew install josephine` builds from source.
 
+On NixOS or with Nix, Joséphine is a flake: `nix run github:systm-d/josephine -- status` to try her, or add her module and set `services.josephine.enable = true` (on NixOS or Home Manager) to run the daemon as a systemd **user** service.
+
 To keep Joséphine watching across reboots, enable the bundled systemd **user** unit:
 
 ```sh
