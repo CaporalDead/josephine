@@ -2,11 +2,18 @@
 
 ## Supported versions
 
-Joséphine is pre-1.0; security fixes target the latest released version and `main`.
+Joséphine is pre-1.0 and releases move quickly. Security fixes land on the
+latest released version and on `main`. They are not backported to earlier minor
+versions, and there is no long-term support branch.
 
-| Version | Supported |
-| ------- | --------- |
-| 0.1.x   | ✅        |
+| Version             | Supported |
+| ------------------- | --------- |
+| Latest release      | ✅        |
+| `main`              | ✅        |
+| Any earlier release | ❌        |
+
+If you are running an older version, upgrade to the latest release before
+reporting an issue — the fix, if any, will only ever be published there.
 
 ## Reporting a vulnerability
 

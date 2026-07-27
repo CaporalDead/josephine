@@ -185,7 +185,7 @@ with a gradient.
 
 ## Documentation
 
-- [Architecture](docs/ARCHITECTURE.md) · [Current state](docs/CURRENT_STATE.md) · [Roadmap](docs/ROADMAP.md)
+- [Architecture](docs/ARCHITECTURE.md) · [Development](docs/DEVELOPMENT.md) · [Current state](docs/CURRENT_STATE.md) · [Roadmap](docs/ROADMAP.md)
 - [Contributing](CONTRIBUTING.md) · [Conventions](CONVENTIONS.md) · [Code of Conduct](CODE_OF_CONDUCT.md) · [Security](SECURITY.md)
 - Website: <https://systm-d.github.io/josephine/>
 
@@ -199,6 +199,11 @@ cargo clippy --workspace --all-targets -- -D warnings
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and quality gate.
+
+New contributors are welcome, and there is usually something small to pick up:
+
+- Good first issues: <https://github.com/systm-d/josephine/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22>
+- Where help is wanted: <https://github.com/systm-d/josephine/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22>
 
 ## License
 
