@@ -24,10 +24,10 @@ instead of restating these rules.
 
 ## Language of text
 
-- Documentation (README, this file, governance, future site) is in **English**.
-- User-facing strings — CLI output and desktop notifications — are in **French**
-  and intentionally warm (Joséphine, the guardian angel). Never `ERROR`/`FATAL`/
-  `PANIC` in user-facing text.
+- Documentation (README, this file, governance, the site) is in **English**.
+- User-facing strings — CLI output and desktop notifications — ship in **English
+  and French**, English by default. They are warm, protective and never
+  alarmist; never `ERROR`/`FATAL`/`PANIC` in user-facing text.
 - Code identifiers are in English.
 
 ## Git & releases
