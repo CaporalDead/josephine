@@ -61,6 +61,7 @@ Windows builds**.
 | Debian / Ubuntu | `josephine_<version>_amd64.deb`   |
 | Fedora / RHEL   | `josephine-<version>.x86_64.rpm`  |
 | Arch Linux      | AUR — `packaging/aur/PKGBUILD`    |
+| NixOS / Nix     | Flake: `nix run github:systm-d/josephine` |
 
 ```sh
 # Debian / Ubuntu
@@ -93,6 +94,46 @@ brew "josephine"
 curl -LO https://github.com/systm-d/josephine/releases/latest/download/PKGBUILD
 makepkg -si
 ```
+
+**Nix / NixOS:** this repository is a flake. Try Joséphine without installing
+anything:
+
+```sh
+nix run github:systm-d/josephine -- status
+```
+
+Install it imperatively into your profile:
+
+```sh
+nix profile install github:systm-d/josephine
+```
+
+Or wire it into your system by adding the flake as an input:
+
+```nix
+# flake.nix
+inputs.josephine.url = "github:systm-d/josephine";
+```
+
+On NixOS, import the module and enable the background watcher (it runs as a
+systemd *user* service, like the other packages):
+
+```nix
+imports = [ inputs.josephine.nixosModules.default ];
+services.josephine.enable = true;
+```
+
+With Home Manager, the module has the same shape:
+
+```nix
+imports = [ inputs.josephine.homeManagerModules.default ];
+services.josephine.enable = true;
+```
+
+The package is also exposed as `packages.<system>.default` and through
+`overlays.default`, if you would rather add it to `environment.systemPackages`
+yourself. Because a Nix install lives in the read-only store, `josephine update`
+will not self-install; it points you back to your configuration instead.
 
 ### From source
 

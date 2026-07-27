@@ -7,7 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.11.0] - 2026-07-25
+### Added
+
+- **Nix flake, with NixOS and Home Manager modules.** The repository is now a
+  flake: `nix run github:systm-d/josephine` to try Joséphine, `nix profile
+  install github:systm-d/josephine` to keep her, or add the flake as an input
+  and set `services.josephine.enable = true` (on NixOS or Home Manager) to run
+  the watcher as a systemd user service. The recipes live under `packaging/nix/`
+  and the derivation builds from the committed `Cargo.lock`, so a new release
+  needs nothing more than a tag. `josephine update` now recognises a
+  `/nix/store` install and points you back to your configuration instead of
+  trying to self-install into the read-only store.
+
+### Fixed
+
+- **The `filesystem` check no longer false-alarms on NixOS.** NixOS keeps
+  `/nix/store` read-only (via `boot.readOnlyNixStore`), so it shows up in
+  `/proc/mounts` as a read-only bind mount of a normally-writable filesystem
+  (`ext4`, `btrfs`, …) — exactly the shape the check reads as a disk silently
+  going read-only. Mount points that are read-only by design are now skipped
+  through a configurable `checks.filesystem.ignore_mounts` allowlist, which
+  defaults to `/nix/store` and `/nix/.ro-store`; extend it for other immutable
+  systems (for example `/usr` on an ostree-based distro).
 
 ### Added
 
