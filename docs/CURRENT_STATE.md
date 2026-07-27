@@ -86,9 +86,9 @@ même phrase à chaque fois. Sont variés : l'accroche de `status`, la ligne
 « tout va bien », la clôture des remèdes de `doctor`, les lignes de `daemon`, le message
 de `notify test`, et les notifications de **rétablissement**. Règle d'or : la
 variété ne touche que les **lignes de caractère** — les *faits* d'une alerte
-(le nombre, la commande à lancer) restent stables et précis. Le
-**claquement de doigts** (`✧`) ferme la section « ce qu'il reste à faire »
-de `josephine doctor`.
+(le nombre, la commande à lancer) restent stables et précis. Un
+`✧` discret ferme la section « ce qu'il reste à faire » de `josephine
+doctor`.
 
 `doctor` **diagnostique** maintenant vraiment : il ouvre sur un **verdict**
 (rien à signaler / une note ou deux / quelque chose réclame votre attention)
@@ -111,8 +111,8 @@ actions à mener, la plus grave d'abord, et seulement quand il y en a.
 - États : NORMAL → WARNING → CRITICAL → RECOVERED
 - Anti-spam : pas de notification si l'état ne change pas
 - Messages : module `messages.rs`, ton « chaleur sobre » depuis 0.7.0 —
-  direct, calme, rassurant, jamais alarmiste (identité esprit gardien
-  conservée, sans mascotte ni emoji). Depuis 0.10.0, les messages de
+  direct, calme, rassurant, jamais alarmiste (identité esprit gardien,
+  sans mascotte ni emoji). Depuis 0.10.0, les messages de
   **rétablissement** sont variés via `voice.rs` (plusieurs formulations
   EN + FR) ; le **corps des alertes reste stable** (fait + commande)
 - Canal : desktop via `notify-rust` / libnotify
