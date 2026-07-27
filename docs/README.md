@@ -1,15 +1,15 @@
-# Documentation Joséphine
+# Joséphine documentation
 
-Index des documents pour le développement.
+Index of the developer documentation.
 
-| Document | Rôle |
+| Document | Role |
 |----------|------|
-| [CURRENT_STATE.md](CURRENT_STATE.md) | **Référence principale** — ce qui est livré aujourd'hui |
-| [ROADMAP.md](ROADMAP.md) | Périmètre produit et prochaines versions |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Structure technique, flux, ajout d'un check |
-| [DEVELOPMENT.md](DEVELOPMENT.md) | Build, tests, conventions de code |
-| [superpowers/specs/2026-06-29-josephine-v01-design.md](superpowers/specs/2026-06-29-josephine-v01-design.md) | Spec initiale v0.1 (historique) |
-| [superpowers/specs/2026-06-29-josephine-v02-design.md](superpowers/specs/2026-06-29-josephine-v02-design.md) | Spec cible v0.2 |
-| [superpowers/plans/2026-06-29-josephine-v02-plan.md](superpowers/plans/2026-06-29-josephine-v02-plan.md) | Plan d'implémentation v0.2 |
+| [CURRENT_STATE.md](CURRENT_STATE.md) | **Main reference** — what actually ships today |
+| [ROADMAP.md](ROADMAP.md) | Product scope and upcoming versions |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Technical structure, data flow, how to add a new check |
+| [DEVELOPMENT.md](DEVELOPMENT.md) | Build, tests, code conventions |
+| [superpowers/](superpowers/) | Dated design specs and implementation plans, one pair per increment — a historical record of how each feature was designed |
 
-Le README à la racine reste la vitrine utilisateur ; les détails dev vivent ici.
+The root [README.md](../README.md) stays the user-facing shop window (also
+available in French as [README.fr.md](../README.fr.md)); developer detail lives
+here.
