@@ -1,5 +1,5 @@
 class Josephine < Formula
-  desc "Your computer's guardian angel — a local Linux system watcher"
+  desc "Your computer's guardian spirit — a local Linux system watcher"
   homepage "https://github.com/systm-d/josephine"
   url "https://github.com/systm-d/josephine/archive/refs/tags/v0.1.0.tar.gz"
   # Placeholder: release.yml replaces url + sha256 with the real values on tag.

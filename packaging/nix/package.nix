@@ -41,7 +41,7 @@ rustPlatform.buildRustPackage {
   ];
 
   meta = {
-    description = "Your computer's quiet guardian angel - a local Linux system watcher";
+    description = "Your computer's quiet guardian spirit - a local Linux system watcher";
     homepage = "https://github.com/systm-d/josephine";
     changelog = "https://github.com/systm-d/josephine/blob/v${cargoToml.workspace.package.version}/CHANGELOG.md";
     license = with lib.licenses; [

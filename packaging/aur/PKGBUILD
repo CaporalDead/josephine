@@ -2,7 +2,7 @@
 pkgname=josephine
 pkgver=0.1.0
 pkgrel=1
-pkgdesc="Your computer's guardian angel — a local Linux system watcher"
+pkgdesc="Your computer's guardian spirit — a local Linux system watcher"
 arch=('x86_64')
 url="https://github.com/systm-d/josephine"
 license=('MIT' 'Apache-2.0')
