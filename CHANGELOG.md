@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   defaults to `/nix/store` and `/nix/.ro-store`; extend it for other immutable
   systems (for example `/usr` on an ostree-based distro).
 
+## [0.11.0] - 2026-07-25
+
 ### Added
 
 - **`doctor` now closes on what's left to do.** After the check-by-check exam,
