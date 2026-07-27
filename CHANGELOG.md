@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **The example banner is gone.** `resources/banner.txt` was an ASCII angel from
+  before Joséphine had a face, and the README offered it as a ready-to-use
+  example — so anyone who followed it installed the old identity above their
+  status screen. The feature itself is untouched: drop any ASCII or Braille art
+  in `~/.config/josephine/banner.txt` and it still appears above the title,
+  tinted with a gradient.
+
 ## [0.12.0] - 2026-07-27
 
 ### Added
