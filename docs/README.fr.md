@@ -1,6 +1,6 @@
 # Joséphine
 
-> **L'ange gardien de votre ordinateur.**
+> **L'esprit gardien de votre ordinateur.**
 
 Joséphine observe votre machine en silence et n'intervient que lorsqu'une intervention est utile. Elle surveille, détecte, prévient et accompagne — sans jamais devenir intrusive.
 
@@ -13,7 +13,7 @@ Tout reste **100 % local** : aucune donnée envoyée sur Internet, aucun compte,
 | Principe | Description |
 |----------|-------------|
 | **Invisible** | Pas de fenêtre, pas d'interface graphique. Elle n'apparaît que quand c'est utile. |
-| **Bienveillante** | Jamais `ERROR`, `FATAL`, `PANIC`. Toujours un ton chaleureux, à la Joséphine *ange gardien*. |
+| **Bienveillante** | Jamais `ERROR`, `FATAL`, `PANIC`. Toujours un ton chaleureux et protecteur, jamais alarmiste. |
 | **Locale** | Exécution entièrement sur votre machine. |
 
 ---

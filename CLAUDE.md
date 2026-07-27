@@ -14,10 +14,13 @@ Local Linux system guardian. Rust workspace: `josephine-core` (pure logic) +
 ## Product rules
 
 - **English by default, French via `language: fr` in the config** (see
-  `josephine-core/src/i18n.rs`). Warm *guardian-angel* tone in **both**
-  languages; never `ERROR`/`FATAL`/`PANIC` in user-facing text. Every
-  user-facing string must ship **English and French** — wrap literals in
-  `i18n::t(en, fr)`, or use `match i18n::lang()` for interpolated ones.
+  `josephine-core/src/i18n.rs`). Warm, protective, quietly playful — never
+  alarmist, and never `ERROR`/`FATAL`/`PANIC` in user-facing text. The
+  register is Joséphine herself: a guardian spirit bound to one machine, who
+  speaks up only when it matters and **shows you the command rather than
+  running it**. Every user-facing string must ship **English and French** —
+  wrap literals in `i18n::t(en, fr)`, or use `match i18n::lang()` for
+  interpolated ones.
 - 100% local, no cloud.
 - Linux-only (systemd, `/sys/class/thermal`, libnotify).
 

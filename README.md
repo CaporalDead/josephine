@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="resources/social-preview-en.png" alt="Joséphine — your computer's quiet guardian angel" width="720">
+  <img src="resources/social-preview-en.png" alt="Joséphine — your computer's quiet guardian spirit" width="720">
 </p>
 
 <h1 align="center">Joséphine</h1>
 
-<p align="center"><em>Your computer's quiet guardian angel.</em></p>
+<p align="center"><em>Your computer's quiet guardian spirit.</em></p>
 
 <p align="center">
   <a href="https://github.com/systm-d/josephine/actions/workflows/ci.yml"><img src="https://github.com/systm-d/josephine/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
@@ -20,8 +20,8 @@ notifications — never intrusive, always local. **No data ever leaves your
 computer.**
 
 > Joséphine speaks **English by default**; set `language: fr` in
-> `~/.config/josephine/config.yaml` for her French voice. The warm
-> guardian-angel tone is preserved in both.
+> `~/.config/josephine/config.yaml` for her French voice. The same warm,
+> protective voice in both.
 
 ## Features
 

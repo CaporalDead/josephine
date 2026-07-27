@@ -1,6 +1,6 @@
 base_url = "https://systm-d.github.io/josephine"
 title = "Joséphine"
-description = "Your computer's guardian angel"
+description = "Your computer's guardian spirit"
 default_language = "en"
 compile_sass = true
 build_search_index = false
@@ -10,7 +10,7 @@ highlight_code = true
 
 [languages.fr]
 title = "Joséphine"
-description = "L'ange gardien de votre ordinateur"
+description = "L'esprit gardien de votre ordinateur"
 
 [extra]
 brand_color = "#E0A458"

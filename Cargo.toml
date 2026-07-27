@@ -3,14 +3,14 @@ resolver = "2"
 members = ["crates/josephine-core", "crates/josephine"]
 
 [workspace.package]
-version = "0.11.0"
+version = "0.12.0"
 edition = "2024"
 rust-version = "1.85"
 license = "MIT OR Apache-2.0"
 authors = ["Kevin Delfour"]
 repository = "https://github.com/systm-d/josephine"
 homepage = "https://github.com/systm-d/josephine"
-description = "L'ange gardien de votre ordinateur"
+description = "Your computer's guardian spirit"
 
 [workspace.dependencies]
 anyhow = "1"

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-07-27
+
 ### Added
 
 - **Nix flake, with NixOS and Home Manager modules.** The repository is now a
@@ -19,6 +21,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `/nix/store` install and points you back to your configuration instead of
   trying to self-install into the read-only store.
 
+### Changed
+
+- **Joséphine has a face, and the words to match.** She is a *guardian
+  spirit* now, not a guardian angel: a small fox-spirit who watches one
+  machine. Four illustrations replace the hand-drawn SVG on the site — a
+  portrait beside the hero, a scene where she reads your dials, one above
+  the fourteen checks, and one of her asleep on the tower when you reach the
+  bottom of the page. The wording follows everywhere it appeared, including
+  the `--help` line and the crates.io description.
+- **The callout no longer promises what she doesn't do.** It claimed she
+  "sorts it out" with something close to a finger-snap; removing `josephine
+  fix` in v0.11.0 disproved the first and orphaned the second. She notices,
+  she tells you plainly, and she shows you the command rather than running
+  it — which is now written into the project's own tone rule.
+
 ### Fixed
 
 - **The `filesystem` check no longer false-alarms on NixOS.** NixOS keeps
@@ -29,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   through a configurable `checks.filesystem.ignore_mounts` allowlist, which
   defaults to `/nix/store` and `/nix/.ro-store`; extend it for other immutable
   systems (for example `/usr` on an ostree-based distro).
+
+## [0.11.0] - 2026-07-25
 
 ### Added
 

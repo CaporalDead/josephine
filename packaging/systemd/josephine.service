@@ -1,5 +1,5 @@
 [Unit]
-Description=Joséphine — your computer's guardian angel
+Description=Joséphine — your computer's guardian spirit
 Documentation=https://github.com/systm-d/josephine
 After=graphical-session.target
 

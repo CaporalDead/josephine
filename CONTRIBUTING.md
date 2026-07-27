@@ -1,6 +1,6 @@
 # Contributing to Joséphine
 
-Thanks for your interest in improving Joséphine — your computer's guardian angel.
+Thanks for your interest in improving Joséphine — your computer's guardian spirit.
 
 ## Before you start
 
