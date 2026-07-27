@@ -604,14 +604,16 @@ Expected: all green, and the site builds clean.
 - [ ] **Step 5: The exhaustive grep**
 
 ```bash
-grep -rniE "guardian.?angel|ange gardien" . \
-  --include="*.md" --include="*.toml" --include="*.html" --include="*.rs" \
-  2>/dev/null \
-  | grep -v "^./docs/superpowers/" \
-  | grep -v "^./CHANGELOG.md" \
-  | grep -v "^./docs/ROADMAP.md" \
-  | grep -v "^./target/"
+git grep -niE "guardian.?angel|ange gardien" -- \
+  ':!docs/superpowers/' ':!CHANGELOG.md' ':!docs/ROADMAP.md'
 ```
+
+`git grep` is scoped to tracked files by construction (no `target/` exclusion
+needed) and has no extension list to go blind on — an earlier version of this
+step filtered by `--include="*.md" --include="*.toml" --include="*.html"
+--include="*.rs"`, which silently skipped `.nix`, `.rb`, and extensionless
+files like `PKGBUILD` and `josephine.service`, and passed clean while seven
+such surfaces still said "guardian angel".
 
 Expected: **no output.** Every remaining hit lives in a historical record that must not be edited — past specs and plans, the changelog's own history, and the roadmap's dated tables.
 
