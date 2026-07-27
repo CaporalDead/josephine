@@ -181,7 +181,7 @@ History and the daemon's state live under `~/.local/share/josephine/`.
 
 The `status` header is deliberately sober. Want a flourish? Drop any ASCII/Braille
 art in `~/.config/josephine/banner.txt` and it appears above the title, tinted
-with a gradient. A ready-to-use example lives at [`resources/banner.txt`](resources/banner.txt).
+with a gradient.
 
 ## Documentation
 
