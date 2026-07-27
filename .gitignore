@@ -3,3 +3,7 @@
 /site/public/
 /site/static/*.png
 /.claude/worktrees/
+
+# Nix build outputs
+/result
+/result-*

@@ -67,7 +67,7 @@ Two widths per image, served via `srcset`, each sized for its slot rather than u
 
 | Slot | Image | Widths | Weight |
 |---|---|---|---|
-| Hero, right column | `checks` | 512 / 768 | 45 / 96 KB |
+| Hero, right column | `checks`, cropped | 512 / 721 | 87 / 188 KB |
 | "How she works" | `why` | 768 / 1024 | 103 / 173 KB |
 | Checks grid | `hero` | 768 / 1024 | 110 / 175 KB |
 | Footer | `footer` | 384 / 512 | 36 / 61 KB |
@@ -95,7 +95,16 @@ On narrow screens the portrait sits **under** the CTA. This is deliberately the 
 
 The real CLI readout (`.term`) stays exactly where it is, below the hero block: the terminal keeps its place in the identity, it simply no longer carries the page alone.
 
-`josephine-portrait` earns the hero slot because it is the only square, scenery-free image of the four. A square sits in a text-adjacent column without cropping, and it compresses better than the landscape scenes — 96 KB against 175 KB for the same visual weight.
+`josephine-portrait` earns the hero slot because it is the only scenery-free image of the four — nothing in it competes with the text beside it.
+
+**It is cropped, not used square.** The source is a 1024×1024 image in which the character occupies 681×784 with generous transparent margin — 182 px of empty space to her left, 161 to her right, 100 above, 140 below. Used whole, she rendered 269 px tall beside a 498 px block of text, and read as an afterthought. The shipped rendition is a tight crop, `724×1024+160+0` narrowed further to `721×824+162+80`, leaving 20 px of margin around her.
+
+Cropping raises two costs, both accepted deliberately:
+
+- The column widens from 22rem to 27rem so her own aspect ratio (0.87 wide to tall) can reach the text's height. That takes the text column from 560 px to 480 px, and the lede wraps one line more.
+- The crop caps the native width at 721 px, so a DPR 2 screen displaying her at 432 px receives 1.67× rather than 2×. On a soft-edged illustration this is barely perceptible; eliminating it would mean regenerating the source larger.
+
+A floor of `minmax(21rem, 1fr)` on the text column is required: without it, the 780 px band squeezed the text to 300 px wide and 695 px tall.
 
 **"How she works"** — the `.how__art` figure. The `m::guardian()` SVG is **deleted** from `macros.html`, comment, halo and wings included, and its `.guardian` rule leaves `main.scss`. `josephine-veille` takes the slot: it is the explanatory image, showing her reading a dashboard, and its landscape framing suits the two-column grid beside the `.flow` nodes.
 
@@ -125,12 +134,12 @@ Measured (full scroll-through, one page load each):
 
 | profile | fetched |
 |---|---|
-| phone 390 px, DPR 3 | 508 KB |
-| phone 390 px, DPR 2 | 322 KB |
-| desktop 1440 px, DPR 1 | 296 KB |
-| desktop 1440 px, DPR 2 | 438 KB |
+| phone 390 px, DPR 3 | 599 KB |
+| phone 390 px, DPR 2 | 364 KB |
+| desktop 1440 px, DPR 1 | 338 KB |
+| desktop 1440 px, DPR 2 | 529 KB |
 
-What makes it acceptable: only the hero portrait is on the critical path, at **96 KB** worst case. The other three load as the visitor scrolls. First paint costs one image, not four.
+What makes it acceptable: only the hero portrait is on the critical path. The other three load as the visitor scrolls, so first paint costs one image, not four — but that one image is now **188 KB** at DPR 2 and above, not the 96 KB of the uncropped square. Enlarging the portrait to match the text's height is what bought that: the crop removes transparent margin, so every pixel served carries drawing, and there are more of them. It is the most expensive single decision in this increment and it was made with the number in view.
 
 ---
 
