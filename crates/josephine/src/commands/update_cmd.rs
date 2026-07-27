@@ -88,12 +88,15 @@ pub fn run(check_only: bool, assume_yes: bool) -> Result<()> {
 
 fn fetch_latest() -> Result<ReleaseInfo> {
     let body = ureq::get(update::LATEST_RELEASE_URL)
-        .set("User-Agent", USER_AGENT)
-        .set("Accept", "application/vnd.github+json")
-        .timeout(Duration::from_secs(15))
+        .header("User-Agent", USER_AGENT)
+        .header("Accept", "application/vnd.github+json")
+        .config()
+        .timeout_global(Some(Duration::from_secs(15)))
+        .build()
         .call()
         .context("request to the GitHub API")?
-        .into_string()
+        .body_mut()
+        .read_to_string()
         .context("reading the GitHub response")?;
     update::parse_release(&body)
 }
@@ -196,11 +199,14 @@ fn apply(release: &ReleaseInfo, assume_yes: bool) -> Result<()> {
 fn download(asset: &Asset, dir: &Path) -> Result<PathBuf> {
     let dest = dir.join(&asset.name);
 
-    let response = ureq::get(&asset.download_url)
-        .set("User-Agent", USER_AGENT)
+    // `into_reader` is unlimited by default, which is what we want for a
+    // multi-megabyte package; the checksum below is what guards the content.
+    let mut reader = ureq::get(&asset.download_url)
+        .header("User-Agent", USER_AGENT)
         .call()
-        .context("downloading the package")?;
-    let mut reader = response.into_reader();
+        .context("downloading the package")?
+        .into_body()
+        .into_reader();
     let mut file =
         std::fs::File::create(&dest).with_context(|| format!("creating {}", dest.display()))?;
     io::copy(&mut reader, &mut file).context("writing the downloaded package")?;
@@ -269,10 +275,10 @@ fn verify(release: &ReleaseInfo, asset: &Asset, package: &Path) -> Integrity {
         return Integrity::Unverified;
     };
     let expected = ureq::get(&sum_asset.download_url)
-        .set("User-Agent", USER_AGENT)
+        .header("User-Agent", USER_AGENT)
         .call()
         .ok()
-        .and_then(|r| r.into_string().ok())
+        .and_then(|mut r| r.body_mut().read_to_string().ok())
         .and_then(|text| update::parse_sha256_line(&text));
     let actual = update::sha256_hex(package).ok();
 

@@ -284,11 +284,23 @@ pub fn install_plan(channel: InstallChannel, package: &Path) -> InstallPlan {
 /// Compute the lowercase hex SHA-256 of a file.
 pub fn sha256_hex(path: &Path) -> Result<String> {
     use sha2::{Digest, Sha256};
+    use std::io::Read;
 
     let mut file =
-        std::fs::File::open(path).with_context(|| format!("ouverture de {}", path.display()))?;
+        std::fs::File::open(path).with_context(|| format!("opening {}", path.display()))?;
     let mut hasher = Sha256::new();
-    std::io::copy(&mut file, &mut hasher).context("lecture pour le calcul du checksum")?;
+    // sha2 0.11 dropped the `io::Write` impl on hashers, so feed it by hand
+    // rather than through `io::copy`.
+    let mut buf = [0u8; 64 * 1024];
+    loop {
+        let read = file
+            .read(&mut buf)
+            .context("reading the file to checksum")?;
+        if read == 0 {
+            break;
+        }
+        hasher.update(&buf[..read]);
+    }
 
     let digest = hasher.finalize();
     let mut hex = String::with_capacity(digest.len() * 2);
@@ -425,6 +437,60 @@ mod tests {
         assert_eq!(
             parse_sha256_line("abc123  josephine.deb\n").as_deref(),
             Some("abc123")
+        );
+    }
+
+    /// Write `bytes` to a uniquely named file under the temp dir and return it.
+    fn temp_file_with(tag: &str, bytes: &[u8]) -> std::path::PathBuf {
+        let path = std::env::temp_dir().join(format!(
+            "josephine-sha256-{tag}-{}-{:?}",
+            std::process::id(),
+            std::thread::current().id()
+        ));
+        std::fs::write(&path, bytes).expect("writing the temp file");
+        path
+    }
+
+    #[test]
+    fn sha256_hex_matches_the_known_vector() {
+        let path = temp_file_with("known", b"hello");
+        let digest = sha256_hex(&path).expect("hashing");
+        std::fs::remove_file(&path).ok();
+
+        // `printf 'hello' | sha256sum`
+        assert_eq!(
+            digest,
+            "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+        );
+    }
+
+    /// The file is read through a 64 KiB buffer, so anything larger exercises
+    /// the loop's chunk boundaries — where an off-by-one would hide.
+    #[test]
+    fn sha256_hex_spans_several_buffer_fills() {
+        use sha2::{Digest, Sha256};
+
+        let bytes: Vec<u8> = (0..200_000u32).map(|i| (i % 251) as u8).collect();
+        let path = temp_file_with("large", &bytes);
+        let from_file = sha256_hex(&path).expect("hashing");
+        std::fs::remove_file(&path).ok();
+
+        // Same bytes hashed in one shot: the chunked read must agree.
+        let one_shot = Sha256::digest(&bytes);
+        let expected: String = one_shot.iter().map(|b| format!("{b:02x}")).collect();
+
+        assert_eq!(from_file, expected);
+    }
+
+    #[test]
+    fn sha256_hex_of_an_empty_file_is_the_empty_digest() {
+        let path = temp_file_with("empty", b"");
+        let digest = sha256_hex(&path).expect("hashing");
+        std::fs::remove_file(&path).ok();
+
+        assert_eq!(
+            digest,
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         );
     }
 }
