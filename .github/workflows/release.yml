@@ -40,7 +40,7 @@ jobs:
           cp -r packaging "$staging/"
           tar czf "$staging.tar.gz" "$staging"
           sha256sum "$staging.tar.gz" | tee "$staging.tar.gz.sha256"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: josephine-linux-x86_64
           path: |
@@ -69,7 +69,7 @@ jobs:
           for pkg in target/debian/*.deb; do
             ( cd "$(dirname "$pkg")" && sha256sum "$(basename "$pkg")" | tee "$(basename "$pkg").sha256" )
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: josephine-deb
           path: |
@@ -97,7 +97,7 @@ jobs:
           for pkg in target/generate-rpm/*.rpm; do
             ( cd "$(dirname "$pkg")" && sha256sum "$(basename "$pkg")" | tee "$(basename "$pkg").sha256" )
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: josephine-rpm
           path: |
