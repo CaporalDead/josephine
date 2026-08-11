@@ -21,7 +21,7 @@ chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive"] }
 clap_complete = "4"
 colored = "3"
-comfy-table = { version = "7", features = ["tty"] }
+comfy-table = { version = "8", features = ["tty"] }
 indicatif = "0.18"
 dirs = "6"
 notify-rust = "4"
