@@ -24,7 +24,7 @@ Ce document est la **source de vérité** pour l'état du dépôt. En cas de div
 | `network` | `gateway_latency_ms` (LAN, 100 % local) | `/proc/net/route`, `ping` |
 | `battery` | `charge_percent`, `battery_depletion_percent` | `/sys/class/power_supply` |
 | `inode` | `inode_usage_percent_worst` | `df -iPT`* |
-| `smart` | `smart_failing` (opt-in, root requis) | `smartctl -H` |
+| `smart` | `smart_failing`, `smart_wear_percent` (opt-in, root requis) | `smartctl -H`, `smartctl -j -a` |
 | `kernel` | `kernel_incidents` (OOM, oops…) | `journalctl -k` |
 | `filesystem` | `readonly_mounts` | `/proc/mounts` |
 | `timesync` | `clock_unsynced` | `timedatectl` |

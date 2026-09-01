@@ -26,6 +26,7 @@ pub fn alert_message(
         "network" => network_alert(metric.value, lang),
         "battery" => battery_alert(metric.value, lang),
         "inode" => inode_alert(metric.value, lang),
+        "smart" if metric.name == "smart_wear_percent" => smart_wear_alert(metric.value, lang),
         "smart" => smart_alert(metric.value, lang),
         "kernel" => kernel_alert(metric.value, lang),
         "filesystem" => filesystem_alert(metric.value, lang),
@@ -407,6 +408,19 @@ fn smart_alert(failing: f64, lang: Lang) -> String {
         Lang::Fr => format!(
             "{n} disque(s) signalent une faiblesse SMART.\n\n\
              Sauvegardez sans tarder : `josephine doctor` pour le détail."
+        ),
+    }
+}
+
+fn smart_wear_alert(percent: f64, lang: Lang) -> String {
+    match lang {
+        Lang::En => format!(
+            "A disk is at {percent:.0}% of its rated write life.\n\n\
+             Plan a replacement and keep your backups current."
+        ),
+        Lang::Fr => format!(
+            "Un disque est à {percent:.0} % de sa durée d'écriture prévue.\n\n\
+             Prévoyez un remplacement et gardez vos sauvegardes à jour."
         ),
     }
 }

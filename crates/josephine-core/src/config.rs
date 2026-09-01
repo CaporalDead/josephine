@@ -137,6 +137,11 @@ pub struct SmartCheckConfig {
     pub enabled: bool,
     #[serde(default = "default_interval_3600")]
     pub interval_secs: u64,
+    /// SSD/NVMe wear, as a percentage of rated write life used (0 = new).
+    #[serde(default = "default_smart_wear_warning")]
+    pub wear_warning: f64,
+    #[serde(default = "default_smart_wear_critical")]
+    pub wear_critical: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -321,6 +326,14 @@ fn default_security_critical() -> f64 {
     20.0
 }
 
+fn default_smart_wear_warning() -> f64 {
+    80.0
+}
+
+fn default_smart_wear_critical() -> f64 {
+    90.0
+}
+
 fn default_warning() -> f64 {
     85.0
 }
@@ -428,6 +441,8 @@ impl Default for SmartCheckConfig {
         Self {
             enabled: false,
             interval_secs: default_interval_3600(),
+            wear_warning: default_smart_wear_warning(),
+            wear_critical: default_smart_wear_critical(),
         }
     }
 }
@@ -573,6 +588,14 @@ impl Config {
         Self::validate_security(&self.checks.security)?;
         if self.checks.smart.interval_secs < 5 {
             bail!("checks.smart.interval_secs must be ≥ 5 seconds");
+        }
+        if !(0.0..=100.0).contains(&self.checks.smart.wear_warning)
+            || !(0.0..=100.0).contains(&self.checks.smart.wear_critical)
+        {
+            bail!("checks.smart.wear_warning and wear_critical must be between 0 and 100 %");
+        }
+        if self.checks.smart.wear_warning >= self.checks.smart.wear_critical {
+            bail!("checks.smart.wear_warning must be less than wear_critical");
         }
 
         if self.history.retention_days == 0 {
