@@ -51,6 +51,8 @@ pub struct ChecksConfig {
     pub timesync: TimesyncCheckConfig,
     #[serde(default)]
     pub security: SecurityCheckConfig,
+    #[serde(default)]
+    pub reboot: RebootCheckConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -214,6 +216,21 @@ pub struct SecurityCheckConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct RebootCheckConfig {
+    #[serde(default = "default_true")]
+    pub enabled: bool,
+    #[serde(default = "default_reboot_interval")]
+    pub interval_secs: u64,
+    /// `reboot_required` flag: 0 = no reboot pending, 1 = one pending.
+    /// warning = 1 surfaces a pending reboot as attention; critical = 2 keeps
+    /// it below critical (a pending reboot is never an emergency).
+    #[serde(default = "default_reboot_warning")]
+    pub warning: f64,
+    #[serde(default = "default_reboot_critical")]
+    pub critical: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct NotificationsConfig {
     #[serde(default = "default_true")]
     pub desktop: bool,
@@ -354,6 +371,18 @@ fn default_smart_wear_critical() -> f64 {
     90.0
 }
 
+fn default_reboot_interval() -> u64 {
+    300
+}
+
+fn default_reboot_warning() -> f64 {
+    1.0
+}
+
+fn default_reboot_critical() -> f64 {
+    2.0
+}
+
 fn default_warning() -> f64 {
     85.0
 }
@@ -431,6 +460,7 @@ impl Default for ChecksConfig {
             filesystem: FilesystemCheckConfig::default(),
             timesync: TimesyncCheckConfig::default(),
             security: SecurityCheckConfig::default(),
+            reboot: RebootCheckConfig::default(),
         }
     }
 }
@@ -520,6 +550,17 @@ impl Default for SecurityCheckConfig {
             interval_secs: default_security_interval(),
             warning: default_security_warning(),
             critical: default_security_critical(),
+        }
+    }
+}
+
+impl Default for RebootCheckConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            interval_secs: default_reboot_interval(),
+            warning: default_reboot_warning(),
+            critical: default_reboot_critical(),
         }
     }
 }
@@ -629,6 +670,7 @@ impl Config {
         Self::validate_filesystem(&self.checks.filesystem)?;
         Self::validate_timesync(&self.checks.timesync)?;
         Self::validate_security(&self.checks.security)?;
+        Self::validate_reboot(&self.checks.reboot)?;
         if self.checks.smart.interval_secs < 5 {
             bail!("checks.smart.interval_secs must be ≥ 5 seconds");
         }
@@ -801,6 +843,19 @@ impl Config {
         }
         if c.warning >= c.critical {
             bail!("checks.security.warning must be less than critical");
+        }
+        Ok(())
+    }
+
+    fn validate_reboot(c: &RebootCheckConfig) -> Result<()> {
+        if c.interval_secs < 5 {
+            bail!("checks.reboot.interval_secs must be ≥ 5 seconds");
+        }
+        if c.warning < 1.0 || c.critical < 1.0 {
+            bail!("checks.reboot.warning and critical must be ≥ 1");
+        }
+        if c.warning >= c.critical {
+            bail!("checks.reboot.warning must be less than critical");
         }
         Ok(())
     }

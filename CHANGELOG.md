@@ -47,6 +47,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   under `forecast`). That recent-stretch check is what keeps a one-off step —
   a big download, a restore — from being read as a slope and projected into an
   ETA. doctor-only for now: no notification, and `--json` is unchanged.
+- **New `reboot` check.** After `updates` reports everything applied, the
+  running system can still be on the old kernel or libraries until you restart.
+  This check flags a pending reboot, best-effort across distros:
+  `/run/reboot-required` (Debian/Ubuntu), `needs-restarting -r` (Fedora/RHEL),
+  the booted-vs-activated system on NixOS (`/run/booted-system` vs
+  `/run/current-system`), or a newer kernel installed under `/lib/modules`. A
+  pending reboot is *attention*, never critical, and the check degrades to
+  "unavailable" rather than guessing. Brings the built-in checks to fifteen.
 
 ### Removed
 

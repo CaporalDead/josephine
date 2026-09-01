@@ -33,7 +33,7 @@ impl Advice {
     }
 }
 
-/// The fourteen checks, in the order `explain` lists them.
+/// The checks, in the order `explain` lists them.
 const ADVICE: &[Advice] = &[
     Advice {
         name: "cpu",
@@ -245,6 +245,21 @@ const ADVICE: &[Advice] = &[
             "Voyez `journalctl -u sshd` ; SSH par clés et fail2ban si pas vous.",
         ),
     },
+    Advice {
+        name: "reboot",
+        what: (
+            "Whether a restart is needed to finish applying updates.",
+            "Si un redémarrage est nécessaire pour finir d'appliquer des mises à jour.",
+        ),
+        why: (
+            "A new kernel or libraries only take effect after a reboot — security fixes included.",
+            "Un nouveau noyau ou de nouvelles bibliothèques ne prennent effet qu'après un redémarrage.",
+        ),
+        remedy: (
+            "Save your work, then reboot when convenient: `systemctl reboot`.",
+            "Enregistrez, puis redémarrez quand vous voulez : `systemctl reboot`.",
+        ),
+    },
 ];
 
 /// The advice for one check, by its internal name (`cpu`, `disk`, …).
@@ -362,14 +377,14 @@ mod tests {
     }
 
     #[test]
-    fn all_fourteen_checks_have_advice() {
+    fn all_checks_have_advice() {
         // `smart` is opt-in (off by default) — flip it on so every check gets
-        // built, otherwise this would only ever exercise thirteen of them.
+        // built, otherwise this would exercise one fewer than the real count.
         let mut config = crate::config::ChecksConfig::default();
         config.smart.enabled = true;
         let checks = crate::checks::build_checks(&config);
 
-        assert_eq!(checks.len(), 14, "expected fourteen checks to be built");
+        assert_eq!(checks.len(), 15, "expected fifteen checks to be built");
         for check in &checks {
             assert!(
                 advice(check.name()).is_some(),

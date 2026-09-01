@@ -198,6 +198,7 @@ pub fn check_label(name: &str) -> &'static str {
         "filesystem" => i18n::t("Filesystem", "Système de fichiers"),
         "timesync" => i18n::t("Clock", "Horloge"),
         "security" => i18n::t("Security", "Sécurité"),
+        "reboot" => i18n::t("Reboot", "Redémarrage"),
         _ => i18n::t("System", "Système"),
     }
 }
@@ -240,6 +241,7 @@ pub fn primary_metric(result: &josephine_core::check::CheckResult) -> Option<&Me
         "filesystem" => result.metrics.iter().find(|m| m.name == "readonly_mounts"),
         "timesync" => result.metrics.iter().find(|m| m.name == "clock_unsynced"),
         "security" => result.metrics.iter().find(|m| m.name == "failed_auths"),
+        "reboot" => result.metrics.iter().find(|m| m.name == "reboot_required"),
         _ => result.metrics.first(),
     }
 }

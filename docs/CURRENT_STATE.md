@@ -11,7 +11,7 @@ Ce document est la **source de vérité** pour l'état du dépôt. En cas de div
 
 ## Livré
 
-### Checks (14)
+### Checks (15)
 
 | Check | Métriques principales | Source |
 |-------|----------------------|--------|
@@ -29,6 +29,7 @@ Ce document est la **source de vérité** pour l'état du dépôt. En cas de div
 | `filesystem` | `readonly_mounts` | `/proc/mounts` |
 | `timesync` | `clock_unsynced` | `timedatectl` |
 | `security` | `failed_auths` | `journalctl` |
+| `reboot` | `reboot_required` | `/run/reboot-required`, `needs-restarting`, `/run/{booted,current}-system`, `/lib/modules` |
 
 \* Le `T` ajoute le type de filesystem à la sortie de `df`, pour ignorer les
 montages en lecture seule de type image (`squashfs`, `iso9660`, `erofs` — ex.
