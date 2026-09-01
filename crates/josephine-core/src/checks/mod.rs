@@ -7,6 +7,7 @@ mod kernel;
 mod memory;
 mod network;
 mod reboot;
+mod pressure;
 mod security;
 mod smart;
 mod systemd;
@@ -23,6 +24,7 @@ pub use kernel::KernelCheck;
 pub use memory::MemoryCheck;
 pub use network::NetworkCheck;
 pub use reboot::RebootCheck;
+pub use pressure::PressureCheck;
 pub use security::SecurityCheck;
 pub use smart::SmartCheck;
 pub use systemd::SystemdCheck;
@@ -81,6 +83,9 @@ pub fn build_checks(config: &ChecksConfig) -> Vec<Box<dyn Check>> {
     if config.reboot.enabled {
         checks.push(Box::new(RebootCheck::new(config.reboot.clone())));
     }
+    if config.pressure.enabled {
+        checks.push(Box::new(PressureCheck::new(config.pressure.clone())));
+    }
 
     checks
 }
@@ -102,6 +107,7 @@ pub fn interval_for_check(name: &str, config: &ChecksConfig) -> u64 {
         "timesync" => config.timesync.interval_secs,
         "security" => config.security.interval_secs,
         "reboot" => config.reboot.interval_secs,
+        "pressure" => config.pressure.interval_secs,
         _ => 60,
     }
 }

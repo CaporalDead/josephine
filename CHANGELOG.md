@@ -55,6 +55,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `/run/current-system`), or a newer kernel installed under `/lib/modules`. A
   pending reboot is *attention*, never critical, and the check degrades to
   "unavailable" rather than guessing. Brings the built-in checks to fifteen.
+- **New `pressure` check (Linux PSI).** Reads `/proc/pressure/{memory,cpu,io}`
+  and takes the `some avg60` figure — the share of the last minute at least one
+  task spent stalled waiting for a resource. Memory pressure carries the
+  threshold (it's the earliest honest warning of a swap death-spiral, ahead of
+  the OOM killer); CPU and IO pressure are recorded for history and `doctor` but
+  don't alert on their own. Degrades to "unavailable" on kernels without PSI.
+  Brings the built-in checks to fifteen.
 
 ### Removed
 

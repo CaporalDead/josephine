@@ -33,6 +33,7 @@ pub fn alert_message(
         "timesync" => timesync_alert(metric.value, lang),
         "security" => security_alert(metric.value, lang),
         "reboot" => reboot_alert(lang),
+        "pressure" => pressure_alert(metric.value, lang),
         other => match lang {
             Lang::En => format!(
                 "{other} is out of range ({:.1} {}). \
@@ -158,6 +159,12 @@ pub fn recovery_message(check_name: &str, metric: &Metric, lang: Lang) -> String
         "reboot" => match lang {
             Lang::En => "No restart pending anymore — you're on the latest kernel.".into(),
             Lang::Fr => "Plus de redémarrage en attente — vous êtes sur le dernier noyau.".into(),
+        },
+        "pressure" => match lang {
+            Lang::En => "Memory pressure is back to normal — nothing's starved for RAM.".into(),
+            Lang::Fr => {
+                "La pression mémoire est revenue à la normale — plus rien ne manque de RAM.".into()
+            }
         },
         other => match lang {
             Lang::En => format!(
@@ -514,6 +521,19 @@ fn reboot_alert(lang: Lang) -> String {
                      (noyau ou bibliothèques). Redémarrez quand ça vous arrange : \
                      `systemctl reboot`."
             .to_string(),
+    }
+}
+
+fn pressure_alert(percent: f64, lang: Lang) -> String {
+    match lang {
+        Lang::En => format!(
+            "Memory pressure is high ({percent:.0}% of the last minute stalled). \
+             Something is starved for RAM — close the biggest user before it swaps hard."
+        ),
+        Lang::Fr => format!(
+            "La pression mémoire est élevée ({percent:.0} % de la dernière minute bloquée). \
+             Quelque chose manque de RAM — fermez le plus gros avant que ça ne swappe fort."
+        ),
     }
 }
 

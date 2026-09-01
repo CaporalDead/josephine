@@ -53,6 +53,8 @@ pub struct ChecksConfig {
     pub security: SecurityCheckConfig,
     #[serde(default)]
     pub reboot: RebootCheckConfig,
+    #[serde(default)]
+    pub pressure: PressureCheckConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -231,6 +233,19 @@ pub struct RebootCheckConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct PressureCheckConfig {
+    #[serde(default = "default_true")]
+    pub enabled: bool,
+    #[serde(default = "default_pressure_interval")]
+    pub interval_secs: u64,
+    /// Memory PSI `some avg60`, as a percentage of the last minute stalled.
+    #[serde(default = "default_pressure_warning")]
+    pub warning: f64,
+    #[serde(default = "default_pressure_critical")]
+    pub critical: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct NotificationsConfig {
     #[serde(default = "default_true")]
     pub desktop: bool,
@@ -383,6 +398,18 @@ fn default_reboot_critical() -> f64 {
     2.0
 }
 
+fn default_pressure_interval() -> u64 {
+    60
+}
+
+fn default_pressure_warning() -> f64 {
+    20.0
+}
+
+fn default_pressure_critical() -> f64 {
+    50.0
+}
+
 fn default_warning() -> f64 {
     85.0
 }
@@ -461,6 +488,7 @@ impl Default for ChecksConfig {
             timesync: TimesyncCheckConfig::default(),
             security: SecurityCheckConfig::default(),
             reboot: RebootCheckConfig::default(),
+            pressure: PressureCheckConfig::default(),
         }
     }
 }
@@ -561,6 +589,17 @@ impl Default for RebootCheckConfig {
             interval_secs: default_reboot_interval(),
             warning: default_reboot_warning(),
             critical: default_reboot_critical(),
+        }
+    }
+}
+
+impl Default for PressureCheckConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            interval_secs: default_pressure_interval(),
+            warning: default_pressure_warning(),
+            critical: default_pressure_critical(),
         }
     }
 }
@@ -671,6 +710,7 @@ impl Config {
         Self::validate_timesync(&self.checks.timesync)?;
         Self::validate_security(&self.checks.security)?;
         Self::validate_reboot(&self.checks.reboot)?;
+        Self::validate_pressure(&self.checks.pressure)?;
         if self.checks.smart.interval_secs < 5 {
             bail!("checks.smart.interval_secs must be ≥ 5 seconds");
         }
@@ -856,6 +896,19 @@ impl Config {
         }
         if c.warning >= c.critical {
             bail!("checks.reboot.warning must be less than critical");
+        }
+        Ok(())
+    }
+
+    fn validate_pressure(c: &PressureCheckConfig) -> Result<()> {
+        if c.interval_secs < 5 {
+            bail!("checks.pressure.interval_secs must be ≥ 5 seconds");
+        }
+        if !(0.0..=100.0).contains(&c.warning) || !(0.0..=100.0).contains(&c.critical) {
+            bail!("checks.pressure.warning and critical must be between 0 and 100 %");
+        }
+        if c.warning >= c.critical {
+            bail!("checks.pressure.warning must be less than critical");
         }
         Ok(())
     }

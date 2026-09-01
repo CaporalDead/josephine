@@ -199,6 +199,7 @@ pub fn check_label(name: &str) -> &'static str {
         "timesync" => i18n::t("Clock", "Horloge"),
         "security" => i18n::t("Security", "Sécurité"),
         "reboot" => i18n::t("Reboot", "Redémarrage"),
+        "pressure" => i18n::t("Pressure", "Pression"),
         _ => i18n::t("System", "Système"),
     }
 }
@@ -242,6 +243,10 @@ pub fn primary_metric(result: &josephine_core::check::CheckResult) -> Option<&Me
         "timesync" => result.metrics.iter().find(|m| m.name == "clock_unsynced"),
         "security" => result.metrics.iter().find(|m| m.name == "failed_auths"),
         "reboot" => result.metrics.iter().find(|m| m.name == "reboot_required"),
+        "pressure" => result
+            .metrics
+            .iter()
+            .find(|m| m.name == "memory_pressure_avg60"),
         _ => result.metrics.first(),
     }
 }
