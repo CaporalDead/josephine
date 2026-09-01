@@ -17,6 +17,8 @@ pub struct Config {
     pub notifications: NotificationsConfig,
     #[serde(default)]
     pub history: HistoryConfig,
+    #[serde(default)]
+    pub forecast: ForecastConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -227,6 +229,24 @@ pub struct HistoryConfig {
     pub retention_days: u32,
 }
 
+/// Trend forecasting ("prévoyance"): project stored history toward a target
+/// (a full disk, worn SSD…) and, when the trend is real and near, surface an
+/// ETA in `doctor`. Deterministic least-squares — no model, no network.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ForecastConfig {
+    #[serde(default = "default_true")]
+    pub enabled: bool,
+    /// Only surface a forecast whose target is within this many days.
+    #[serde(default = "default_forecast_horizon_days")]
+    pub horizon_days: f64,
+    /// Minimum number of hourly samples before a trend is trusted.
+    #[serde(default = "default_forecast_min_samples")]
+    pub min_samples: usize,
+    /// Minimum goodness-of-fit (R², 0..=1) before a trend is trusted.
+    #[serde(default = "default_forecast_min_fit")]
+    pub min_fit: f64,
+}
+
 fn default_true() -> bool {
     true
 }
@@ -340,6 +360,18 @@ fn default_warning() -> f64 {
 
 fn default_critical() -> f64 {
     95.0
+}
+
+fn default_forecast_horizon_days() -> f64 {
+    30.0
+}
+
+fn default_forecast_min_samples() -> usize {
+    12
+}
+
+fn default_forecast_min_fit() -> f64 {
+    0.5
 }
 
 fn default_retention() -> u32 {
@@ -545,6 +577,17 @@ impl Default for HistoryConfig {
     }
 }
 
+impl Default for ForecastConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            horizon_days: default_forecast_horizon_days(),
+            min_samples: default_forecast_min_samples(),
+            min_fit: default_forecast_min_fit(),
+        }
+    }
+}
+
 impl Config {
     pub fn load(path: &Path) -> Result<Self> {
         let config = if !path.exists() {
@@ -600,6 +643,16 @@ impl Config {
 
         if self.history.retention_days == 0 {
             bail!("history.retention_days must be greater than 0");
+        }
+
+        if self.forecast.horizon_days <= 0.0 {
+            bail!("forecast.horizon_days must be greater than 0");
+        }
+        if self.forecast.min_samples < 2 {
+            bail!("forecast.min_samples must be at least 2");
+        }
+        if !(0.0..=1.0).contains(&self.forecast.min_fit) {
+            bail!("forecast.min_fit must be between 0 and 1");
         }
 
         Ok(())

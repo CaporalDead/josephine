@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Duration, NaiveDateTime, Utc};
 use rusqlite::{Connection, params};
 
 use crate::paths::Paths;
@@ -180,6 +180,35 @@ impl Storage {
         }))
     }
 
+    /// Hourly-averaged `(day, value)` points for one metric over the last
+    /// `days`, oldest first. `day` is days since the Unix epoch (a consistent
+    /// day-scaled x), so a linear fit over these points yields a per-day slope.
+    /// Empty when nothing was recorded. Used by the forecast engine.
+    pub fn metric_series_since(
+        &self,
+        check: &str,
+        metric: &str,
+        days: u32,
+    ) -> Result<Vec<(f64, f64)>> {
+        let since = (Utc::now() - Duration::days(i64::from(days))).to_rfc3339();
+        let mut stmt = self.conn.prepare(
+            "SELECT substr(recorded_at, 1, 13) AS hour, AVG(value) FROM metrics
+             WHERE check_name = ?1 AND metric_name = ?2 AND recorded_at >= ?3
+             GROUP BY hour ORDER BY hour",
+        )?;
+        let rows = stmt
+            .query_map(params![check, metric, &since], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?))
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let points = rows
+            .into_iter()
+            .filter_map(|(bucket, value)| hour_bucket_to_day(&bucket).map(|day| (day, value)))
+            .collect();
+        Ok(points)
+    }
+
     /// The most recent state-change events over the last 24 h (newest first).
     pub fn recent_events(&self, limit: usize) -> Result<Vec<EventRecord>> {
         self.events_since(24, limit)
@@ -214,9 +243,27 @@ impl Storage {
     }
 }
 
+/// Convert an `"YYYY-MM-DDTHH"` hour bucket into days since the Unix epoch.
+fn hour_bucket_to_day(bucket: &str) -> Option<f64> {
+    let stamp =
+        NaiveDateTime::parse_from_str(&format!("{bucket}:00:00"), "%Y-%m-%dT%H:%M:%S").ok()?;
+    Some(stamp.and_utc().timestamp() as f64 / 86_400.0)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn hour_bucket_parses_to_a_day_offset() {
+        // 1970-01-02T00 is exactly one day after the epoch.
+        assert_eq!(hour_bucket_to_day("1970-01-02T00"), Some(1.0));
+        // Consecutive hours are 1/24 of a day apart.
+        let a = hour_bucket_to_day("2026-07-28T10").unwrap();
+        let b = hour_bucket_to_day("2026-07-28T11").unwrap();
+        assert!((b - a - 1.0 / 24.0).abs() < 1e-9);
+        assert!(hour_bucket_to_day("not-a-date").is_none());
+    }
 
     #[test]
     fn migrations_apply_to_in_memory_database() {

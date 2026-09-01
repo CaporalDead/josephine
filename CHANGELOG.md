@@ -34,6 +34,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The worst disk sets the figure; spinning disks and SMART-less drives are
   simply skipped. Still opt-in (root), still degrading gracefully — the "fading
   SSD" made measurable years before `-H` flips to failing.
+- **Foresight in `doctor` (the "prévoyance" pillar).** Joséphine now projects the
+  history she already keeps and, when a slow trend is heading somewhere within
+  the month, closes `doctor` with a short heads-up: *"Disk: full in ~6 days
+  (91% now, +1.4%/day)"*. It covers disk, inodes, memory and (opt-in) SSD wear.
+  The projection is a plain least-squares line fit — deterministic, fully local,
+  no model — and it stays silent unless there are enough samples, the fit is
+  good, the trend actually heads toward the limit, and the target is near
+  (guards configurable under `forecast`). doctor-only for now: no notification,
+  and `--json` is unchanged.
 
 ### Removed
 
