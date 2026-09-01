@@ -182,7 +182,13 @@ impl Storage {
 
     /// The most recent state-change events over the last 24 h (newest first).
     pub fn recent_events(&self, limit: usize) -> Result<Vec<EventRecord>> {
-        let since = (Utc::now() - Duration::hours(24)).to_rfc3339();
+        self.events_since(24, limit)
+    }
+
+    /// State-change events over the last `hours` (newest first), capped at
+    /// `limit`. Backs both `history` (24 h) and `report --since` (a digest).
+    pub fn events_since(&self, hours: i64, limit: usize) -> Result<Vec<EventRecord>> {
+        let since = (Utc::now() - Duration::hours(hours)).to_rfc3339();
         let mut stmt = self.conn.prepare(
             "SELECT check_name, metric_name, from_state, to_state, value, message, created_at
              FROM events WHERE created_at >= ?1 ORDER BY created_at DESC LIMIT ?2",

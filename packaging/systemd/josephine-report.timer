@@ -1,0 +1,10 @@
+[Unit]
+Description=Joséphine — weekly health digest
+Documentation=https://github.com/systm-d/josephine
+
+[Timer]
+OnCalendar=weekly
+Persistent=true
+
+[Install]
+WantedBy=timers.target

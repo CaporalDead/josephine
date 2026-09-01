@@ -1,0 +1,9 @@
+[Unit]
+Description=Joséphine — weekly health digest
+Documentation=https://github.com/systm-d/josephine
+
+[Service]
+Type=oneshot
+# Prints the digest to the journal; read it with
+#   journalctl --user -u josephine-report
+ExecStart=/usr/bin/josephine report --since 7d

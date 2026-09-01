@@ -45,7 +45,7 @@ Chaque check implémente le trait `Check` (`josephine-core/src/check.rs`), est i
 | `history` | ✅ |
 | `daemon start/stop/restart/status/logs/run` | ✅ |
 | `config show/validate/edit` | ✅ |
-| `clean` (`--apply`), `report` (`-o`, `--json`) | ✅ |
+| `clean` (`--apply`), `report` (`-o`, `--json`, `--since`) | ✅ |
 | `notify test` | ✅ |
 | `update` (`--check`, `--yes`) | ✅ |
 | `completions <bash\|zsh\|fish…>` | ✅ |
