@@ -32,9 +32,12 @@ fn oneline(results: &[CheckResult]) -> String {
     match results.iter().find(|r| r.worst_severity() == worst) {
         Some(result) => {
             let label = super::style::check_label(&result.check_name);
-            let value = primary_metric(result)
-                .map(format_metric_value)
-                .or_else(|| result.status_value.clone())
+            // Prefer the check's own human one-liner (as the status table does),
+            // falling back to the formatted primary metric.
+            let value = result
+                .status_value
+                .clone()
+                .or_else(|| primary_metric(result).map(format_metric_value))
                 .unwrap_or_else(|| "—".to_string());
             format!("{glyph} {label} {value}")
         }
@@ -216,11 +219,18 @@ mod tests {
         i18n::set_lang(Lang::En);
         // All clear: just the glyph and a short "ok" (ASCII tag off a TTY).
         assert_eq!(oneline(&[disk_result(10.0)]), "[ok] ok");
-        // A pressing check surfaces its tag, label and value.
+        // A pressing check surfaces its tag, label and value (from the primary
+        // metric when there's no status_value).
         let line = oneline(&[disk_result(90.0)]);
         assert!(line.starts_with("[!] "), "line: {line}");
         assert!(line.contains("Disk"), "line: {line}");
         assert!(line.contains("90.0 %"), "line: {line}");
+        // When the check carries its own one-liner, that wins over the metric.
+        let mut with_value = disk_result(99.0);
+        with_value.status_value = Some("full soon".to_string());
+        let line = oneline(&[with_value]);
+        assert!(line.starts_with("[x] "), "line: {line}");
+        assert!(line.contains("full soon"), "line: {line}");
         i18n::set_lang(prev);
     }
 
