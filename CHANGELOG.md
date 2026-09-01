@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`status` now composes with scripts and status bars.** `josephine status
+  --oneline` prints a single glanceable line (the worst glyph, then the most
+  pressing check and its value), and `status` sets its exit code from the worst
+  check it finds: `0` all clear, `1` something to look at, `2` something
+  critical. That makes her a natural fit for Waybar / polybar / tmux / a shell
+  prompt, without becoming a TUI — it stays a one-shot render. A genuine command
+  error still exits non-zero (1) as before.
+
 ### Removed
 
 - **The example banner is gone.** `resources/banner.txt` was an ASCII angel from

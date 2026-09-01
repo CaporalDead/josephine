@@ -40,7 +40,7 @@ Chaque check implémente le trait `Check` (`josephine-core/src/check.rs`), est i
 
 | Commande | Statut |
 |----------|--------|
-| `status` (défaut, `--json`) | ✅ |
+| `status` (défaut, `--json`, `--oneline`, code de sortie 0/1/2) | ✅ |
 | `doctor` (`--verbose`, `--json`) | ✅ |
 | `history` | ✅ |
 | `daemon start/stop/restart/status/logs/run` | ✅ |

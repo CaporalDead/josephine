@@ -148,6 +148,7 @@ cargo install --git https://github.com/systm-d/josephine josephine
 ```sh
 josephine               # quick status summary (default)
 josephine status        # CPU, memory, disk, temperature, systemd, updates at a glance
+josephine status --oneline  # one compact line for a status bar (Waybar, polybar, tmux)
 josephine doctor        # full diagnostics, and what's left to do
 josephine doctor -v     # verbose: thresholds, top 10 processes, intervals
 josephine history       # last 24 h: min/avg/max + sparkline trends, and events
@@ -163,6 +164,11 @@ josephine notify test   # send a test desktop notification
 josephine update        # check GitHub for a newer version and install it
 josephine --version
 ```
+
+`josephine status` sets its exit code from the worst check it finds — `0` all
+clear, `1` something to look at, `2` something critical — so it drops straight
+into a script or a status bar. Pair it with `--oneline` for a single glanceable
+line, or `--json` for the full machine-readable view.
 
 `josephine update` reaches the network only when you run it — never in the
 background. It detects how Joséphine was installed (`.deb`/`.rpm`/…), downloads

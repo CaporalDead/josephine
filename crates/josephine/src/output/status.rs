@@ -4,6 +4,44 @@ use josephine_core::voice;
 
 use super::style::{format_metric_value, primary_metric};
 
+/// The single worst severity across every check — the value `status` maps to
+/// its process exit code (ok = 0, attention = 1, critical = 2).
+pub fn worst_severity(results: &[CheckResult]) -> Severity {
+    results
+        .iter()
+        .map(CheckResult::worst_severity)
+        .max()
+        .unwrap_or(Severity::Info)
+}
+
+/// Print one compact line for a status bar (Waybar, polybar, tmux, a prompt):
+/// the worst glyph, then the most pressing check and its value. When all is
+/// well it prints just the glyph and a short "ok".
+pub fn print_status_oneline(results: &[CheckResult]) {
+    println!("{}", oneline(results));
+}
+
+/// Build the one-line string (pure, so it can be unit-tested). The most
+/// pressing check is the first one at the worst severity, in run order.
+fn oneline(results: &[CheckResult]) -> String {
+    let worst = worst_severity(results);
+    let glyph = super::style::oneline_glyph(worst);
+    if worst == Severity::Info {
+        return format!("{glyph} {}", i18n::t("ok", "ok"));
+    }
+    match results.iter().find(|r| r.worst_severity() == worst) {
+        Some(result) => {
+            let label = super::style::check_label(&result.check_name);
+            let value = primary_metric(result)
+                .map(format_metric_value)
+                .or_else(|| result.status_value.clone())
+                .unwrap_or_else(|| "—".to_string());
+            format!("{glyph} {label} {value}")
+        }
+        None => format!("{glyph} {}", i18n::t("ok", "ok")),
+    }
+}
+
 pub fn print_status_table(results: &[CheckResult]) {
     super::style::sober_header(None, Some(voice::status_tagline()));
     let rows = build_rows(results);
@@ -141,6 +179,50 @@ fn pad(s: &str, width: usize) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use josephine_core::check::Metric;
+
+    fn disk_result(value: f64) -> CheckResult {
+        CheckResult {
+            check_name: "disk".into(),
+            metrics: vec![Metric {
+                name: "usage_percent_worst".into(),
+                value,
+                unit: "%".into(),
+                threshold_warning: Some(85.0),
+                threshold_critical: Some(95.0),
+            }],
+            details: vec![],
+            top_processes: vec![],
+            status_value: None,
+        }
+    }
+
+    #[test]
+    fn worst_severity_takes_the_max() {
+        assert_eq!(worst_severity(&[]), Severity::Info);
+        assert_eq!(worst_severity(&[disk_result(10.0)]), Severity::Info);
+        assert_eq!(worst_severity(&[disk_result(90.0)]), Severity::Attention);
+        assert_eq!(
+            worst_severity(&[disk_result(10.0), disk_result(99.0)]),
+            Severity::Critique
+        );
+    }
+
+    #[test]
+    fn oneline_reports_the_worst_check() {
+        use josephine_core::i18n::{self, Lang};
+        let _guard = i18n::lock_for_test();
+        let prev = i18n::lang();
+        i18n::set_lang(Lang::En);
+        // All clear: just the glyph and a short "ok" (ASCII tag off a TTY).
+        assert_eq!(oneline(&[disk_result(10.0)]), "[ok] ok");
+        // A pressing check surfaces its tag, label and value.
+        let line = oneline(&[disk_result(90.0)]);
+        assert!(line.starts_with("[!] "), "line: {line}");
+        assert!(line.contains("Disk"), "line: {line}");
+        assert!(line.contains("90.0 %"), "line: {line}");
+        i18n::set_lang(prev);
+    }
 
     #[test]
     fn footer_message_pluralizes() {

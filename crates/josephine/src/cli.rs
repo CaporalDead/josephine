@@ -30,6 +30,9 @@ enum Commands {
         /// Print machine-readable JSON to stdout instead of the rendered view
         #[arg(long)]
         json: bool,
+        /// Print one compact line for a status bar (Waybar, polybar, tmux, …)
+        #[arg(long)]
+        oneline: bool,
     },
     /// Full diagnostics
     Doctor {
@@ -93,14 +96,28 @@ enum Commands {
     },
 }
 
-/// Entry point: parse, dispatch, and map errors to a process exit code.
+/// Entry point: parse, dispatch, and map the outcome to a process exit code.
+///
+/// `status` (and the bare default) carry the machine's health out through the
+/// exit code so Joséphine composes with scripts and status bars: ok = 0,
+/// attention = 1, critical = 2. A command error also exits non-zero (1).
 pub async fn run() -> ExitCode {
     match dispatch().await {
-        Ok(()) => ExitCode::SUCCESS,
+        Ok(code) => code,
         Err(e) => {
             eprintln!("{} {e}", josephine_core::voice::error_lead());
             ExitCode::from(1)
         }
+    }
+}
+
+/// Map a worst-case severity to a process exit code.
+fn severity_code(severity: josephine_core::check::Severity) -> u8 {
+    use josephine_core::check::Severity;
+    match severity {
+        Severity::Info => 0,
+        Severity::Attention => 1,
+        Severity::Critique => 2,
     }
 }
 
@@ -133,7 +150,7 @@ fn localize_help_fr(command: clap::Command) -> clap::Command {
         })
 }
 
-async fn dispatch() -> Result<()> {
+async fn dispatch() -> Result<ExitCode> {
     use clap::{CommandFactory, FromArgMatches};
     use josephine_core::i18n::Lang;
 
@@ -148,7 +165,8 @@ async fn dispatch() -> Result<()> {
     let cli = Cli::from_arg_matches(&command.get_matches()).unwrap_or_else(|e| e.exit());
 
     if cli.daemon_internal {
-        return josephine_core::daemon::run_daemon_foreground().await;
+        josephine_core::daemon::run_daemon_foreground().await?;
+        return Ok(ExitCode::SUCCESS);
     }
 
     // A real command is running: ensure the config exists (first run) and
@@ -163,17 +181,46 @@ async fn dispatch() -> Result<()> {
         }
     }
 
-    match cli.command {
-        Some(Commands::Status { json }) => status_cmd::run(json)?,
-        Some(Commands::Doctor { verbose, json }) => doctor_cmd::run(verbose, json)?,
-        Some(Commands::History) => history_cmd::run()?,
-        Some(Commands::Daemon { action }) => daemon_cmd::run(action).await?,
-        Some(Commands::Config { action }) => config_cmd::run(action)?,
-        Some(Commands::Clean { apply }) => clean_cmd::run(apply)?,
-        Some(Commands::Explain { check }) => explain_cmd::run(check.as_deref())?,
-        Some(Commands::Report { output, json }) => report_cmd::run(output, json)?,
-        Some(Commands::Notify { action }) => notify_cmd::run(action)?,
-        Some(Commands::Update { check, yes }) => update_cmd::run(check, yes)?,
+    // Only `status` (and the bare default) carry severity out through the exit
+    // code; every other command exits 0 unless it errors.
+    let code = match cli.command {
+        Some(Commands::Status { json, oneline }) => severity_code(status_cmd::run(json, oneline)?),
+        Some(Commands::Doctor { verbose, json }) => {
+            doctor_cmd::run(verbose, json)?;
+            0
+        }
+        Some(Commands::History) => {
+            history_cmd::run()?;
+            0
+        }
+        Some(Commands::Daemon { action }) => {
+            daemon_cmd::run(action).await?;
+            0
+        }
+        Some(Commands::Config { action }) => {
+            config_cmd::run(action)?;
+            0
+        }
+        Some(Commands::Clean { apply }) => {
+            clean_cmd::run(apply)?;
+            0
+        }
+        Some(Commands::Explain { check }) => {
+            explain_cmd::run(check.as_deref())?;
+            0
+        }
+        Some(Commands::Report { output, json }) => {
+            report_cmd::run(output, json)?;
+            0
+        }
+        Some(Commands::Notify { action }) => {
+            notify_cmd::run(action)?;
+            0
+        }
+        Some(Commands::Update { check, yes }) => {
+            update_cmd::run(check, yes)?;
+            0
+        }
         Some(Commands::Completions { shell }) => {
             clap_complete::generate(
                 shell,
@@ -181,9 +228,23 @@ async fn dispatch() -> Result<()> {
                 "josephine",
                 &mut std::io::stdout(),
             );
+            0
         }
-        None => status_cmd::run(false)?,
-    }
+        None => severity_code(status_cmd::run(false, false)?),
+    };
 
-    Ok(())
+    Ok(ExitCode::from(code))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::severity_code;
+    use josephine_core::check::Severity;
+
+    #[test]
+    fn severity_maps_to_exit_code() {
+        assert_eq!(severity_code(Severity::Info), 0);
+        assert_eq!(severity_code(Severity::Attention), 1);
+        assert_eq!(severity_code(Severity::Critique), 2);
+    }
 }

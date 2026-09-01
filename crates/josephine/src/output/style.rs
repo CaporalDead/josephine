@@ -50,6 +50,22 @@ pub fn status_glyph(severity: Severity) -> String {
     }
 }
 
+/// Compact status token for the one-line output — same shape+colour glyph as
+/// [`status_glyph`], but without the column padding, so it reads cleanly in a
+/// status bar. Off a terminal it degrades to a bare `[ok]`/`[!]`/`[x]` tag.
+pub fn oneline_glyph(severity: Severity) -> String {
+    let (glyph, plain) = match severity {
+        Severity::Info => ("●", "[ok]"),
+        Severity::Attention => ("▲", "[!]"),
+        Severity::Critique => ("✕", "[x]"),
+    };
+    if is_tty() {
+        severity_paint(glyph, severity)
+    } else {
+        plain.to_string()
+    }
+}
+
 /// Load a user banner from `<config dir>/banner.txt`, if present and non-empty.
 ///
 /// Private helper for `sober_header`, which prints the banner (if any) above
