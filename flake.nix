@@ -1,5 +1,5 @@
 {
-  description = "Joséphine - your computer's quiet guardian spirit";
+  description = "Joséphine - your computer's quiet guardian angel";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
