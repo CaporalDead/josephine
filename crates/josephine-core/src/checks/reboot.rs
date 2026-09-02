@@ -44,23 +44,34 @@ impl Check for RebootCheck {
     }
 }
 
-/// Combine the layered signals. `Some(true)` if any says a reboot is due,
-/// `Some(false)` if at least one could answer "no", `None` if nothing could
-/// tell (so the check reports "unavailable" instead of guessing).
+/// Ask the layered signals in order, stopping at the first "yes".
 fn reboot_required() -> Option<bool> {
-    let signals = [
-        reboot_required_file(),
-        needs_restarting(),
-        nixos_reboot_pending(),
-        kernel_reboot_pending(),
+    let probes: [fn() -> Option<bool>; 4] = [
+        reboot_required_file,
+        needs_restarting,
+        nixos_reboot_pending,
+        kernel_reboot_pending,
     ];
-    if signals.contains(&Some(true)) {
-        Some(true)
-    } else if signals.iter().any(Option::is_some) {
-        Some(false)
-    } else {
-        None
+    combine(probes.into_iter().map(|probe| probe()))
+}
+
+/// Fold the layered signals: the first "yes" wins, and we only answer "no"
+/// when something could actually tell — otherwise `None`, and the check
+/// reports "unavailable" rather than guessing.
+///
+/// Takes an iterator so the probes stay **lazy**. `needs-restarting` forks dnf
+/// and this runs on every daemon tick, so once `/run/reboot-required` has said
+/// yes there is no reason to ask anything else.
+fn combine(signals: impl IntoIterator<Item = Option<bool>>) -> Option<bool> {
+    let mut answered = false;
+    for signal in signals {
+        match signal {
+            Some(true) => return Some(true),
+            Some(false) => answered = true,
+            None => {}
+        }
     }
+    answered.then_some(false)
 }
 
 /// Debian/Ubuntu flag file. `Some(true)` when present; `None` when absent
@@ -75,7 +86,23 @@ fn reboot_required_file() -> Option<bool> {
 /// means it isn't. `None` when the tool isn't installed.
 fn needs_restarting() -> Option<bool> {
     let output = Command::new("needs-restarting").arg("-r").output().ok()?;
-    output.status.code().map(|code| code == 1)
+    interpret_needs_restarting(output.status.code())
+}
+
+/// Map `needs-restarting -r`'s exit status, and *only* the two codes it
+/// documents.
+///
+/// Anything else — 2 when the RPM database is locked by another dnf, a
+/// permission error, 127, a signal — means the tool could not answer. Reading
+/// "not 1" as "no reboot needed" turned every one of those into Joséphine
+/// calmly reporting "no restart needed": a silent false negative, on the one
+/// check whose whole job is to notice a pending security fix.
+fn interpret_needs_restarting(code: Option<i32>) -> Option<bool> {
+    match code {
+        Some(0) => Some(false),
+        Some(1) => Some(true),
+        _ => None,
+    }
 }
 
 /// NixOS: a reboot is due when the booted system's kernel or initrd differs
@@ -223,6 +250,43 @@ mod tests {
             "6.9.4-arch1-1",
             &["6.9.4-arch1-1".into()]
         ));
+    }
+
+    /// The regression this guards: any exit code other than 0 or 1 means the
+    /// tool failed, not that the machine is fine.
+    #[test]
+    fn needs_restarting_only_trusts_its_two_documented_codes() {
+        assert_eq!(interpret_needs_restarting(Some(0)), Some(false));
+        assert_eq!(interpret_needs_restarting(Some(1)), Some(true));
+        // 2 = another dnf holds the lock; 13 = permission denied; 127 = no
+        // such command; None = killed by a signal. None of these is an answer.
+        for code in [2, 13, 100, 127, 255] {
+            assert_eq!(
+                interpret_needs_restarting(Some(code)),
+                None,
+                "exit code {code} must not be read as an answer"
+            );
+        }
+        assert_eq!(interpret_needs_restarting(None), None);
+    }
+
+    #[test]
+    fn combine_prefers_yes_then_no_then_unknown() {
+        assert_eq!(combine([None, Some(false), Some(true)]), Some(true));
+        assert_eq!(combine([None, Some(false)]), Some(false));
+        assert_eq!(combine([None, None]), None);
+        assert_eq!(combine([]), None);
+    }
+
+    /// A "yes" must stop the walk: the probes after it fork dnf, and this runs
+    /// on every daemon tick.
+    #[test]
+    fn a_yes_stops_the_remaining_probes() {
+        let asked = std::cell::Cell::new(0);
+        let signals = [Some(true), Some(false), None];
+        let verdict = combine(signals.into_iter().inspect(|_| asked.set(asked.get() + 1)));
+        assert_eq!(verdict, Some(true));
+        assert_eq!(asked.get(), 1, "probes after the first yes must not run");
     }
 
     #[test]
