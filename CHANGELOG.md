@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`status` now composes with scripts and status bars.** `josephine status
+  --oneline` prints a single glanceable line (the worst glyph, then the most
+  pressing check and its value), and `status` sets its exit code from the worst
+  check it finds: `0` all clear, `1` something to look at, `2` something
+  critical. That makes her a natural fit for Waybar / polybar / tmux / a shell
+  prompt, without becoming a TUI — it stays a one-shot render. Codes `0`–`2`
+  mean *health only*: when Joséphine can't answer at all she exits outside that
+  band, following sysexits(3) — `64` for a malformed command line, `70` for a
+  command that ran and failed — so a script can always tell "the machine is
+  critical" from "Joséphine broke".
+- **A gentle weekly digest.** `josephine report --since <window>` (e.g. `7d`,
+  `24h`) appends a summary of the events over that window to the report — how
+  many, what changed, and when. An opt-in systemd *user* timer
+  (`josephine-report.timer`, shipped in the `.deb`/`.rpm`/AUR packages) runs it
+  weekly and prints to the journal (`journalctl --user -u josephine-report`): a
+  look back, never a push you didn't ask for.
+- **The SMART check now tracks SSD/NVMe wear.** A single `smartctl -j -a` per
+  disk now yields both the pass/fail health verdict and how much of the drive's
+  rated write life is used — `percentage_used` on NVMe, a life-left attribute
+  matched *by name* on SATA SSDs (ids are reused across vendors: 231 is
+  `SSD_Life_Left` on some drives and `Temperature_Celsius` on others) — and
+  warns as it climbs (default 80%, critical 90%).
+  The worst disk sets the figure; spinning disks and SMART-less drives are
+  simply skipped. Still opt-in (root), still degrading gracefully — the "fading
+  SSD" made measurable years before `-H` flips to failing.
+- **Foresight in `doctor` (the "prévoyance" pillar).** Joséphine now projects the
+  history she already keeps and, when a slow trend is heading somewhere within
+  the month, closes `doctor` with a short heads-up: *"Disk: full in ~6 days
+  (91% now, +1.4%/day)"*. It covers disk, inodes and (opt-in) SSD wear —
+  things that genuinely fill up and stay filled, which is why memory is not
+  among them: it is reclaimed, not accumulated.
+  The projection is a plain least-squares line fit — deterministic, fully local,
+  no model — and it stays silent unless there are enough samples, the fit is
+  good, the trend still holds over the most recent third of the window, it
+  actually heads toward the limit, and the target is near (guards configurable
+  under `forecast`). That recent-stretch check is what keeps a one-off step —
+  a big download, a restore — from being read as a slope and projected into an
+  ETA. doctor-only for now: no notification, and `--json` is unchanged.
+- **New `reboot` check.** After `updates` reports everything applied, the
+  running system can still be on the old kernel or libraries until you restart.
+  This check flags a pending reboot, best-effort across distros:
+  `/run/reboot-required` (Debian/Ubuntu), `needs-restarting -r` (Fedora/RHEL),
+  the booted-vs-activated system on NixOS (`/run/booted-system` vs
+  `/run/current-system`), or a newer kernel installed under `/lib/modules`. A
+  pending reboot is *attention*, never critical, and the check degrades to
+  "unavailable" rather than guessing. Brings the built-in checks to fifteen.
+- **New `pressure` check (Linux PSI).** Reads `/proc/pressure/{memory,cpu,io}`.
+  The threshold is on memory `full avg60` — the share of the last minute in
+  which *every* runnable task was stalled waiting for RAM, which is the earliest
+  honest warning of a swap death-spiral, ahead of the OOM killer. Deliberately
+  not `some`: healthy work (a kernel build, a large copy) reclaims page cache
+  and drives `some` to 20–30% on a machine in no trouble at all, so alerting on
+  it would interrupt you for using the computer. `some` memory, CPU and IO are
+  recorded for history and `doctor` but never alert. Degrades to "unavailable"
+  on kernels without PSI. Brings the built-in checks to sixteen.
+
 ### Changed
 
 - **Joséphine is an *ange gardien* again.** v0.12.0 recast her as a guardian
@@ -29,8 +87,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   more the drawn SVG — halo, discreet wings behind the laptop, her ✦ on the
   screen — captioned *Envoyée veiller sur une machine. La vôtre.* The hero is
   a single centred column again, and the page ships nine fewer image files.
-- **The example banner is back.** `resources/banner.txt` was dropped a moment
-  ago as "the last angel in the repository". It is the right identity again.
 - **The social previews are recomposed around the haloed ✦** rather than a
   portrait: night ground, a restrained violet glow, the mark under its halo,
   the wordmark and the formula. `resources/make-social-preview.sh` no longer

@@ -33,6 +33,8 @@ package() {
   cd "$pkgname-$pkgver"
   install -Dm755 "target/release/josephine" "$pkgdir/usr/bin/josephine"
   install -Dm644 "packaging/systemd/josephine.service" "$pkgdir/usr/lib/systemd/user/josephine.service"
+  install -Dm644 "packaging/systemd/josephine-report.service" "$pkgdir/usr/lib/systemd/user/josephine-report.service"
+  install -Dm644 "packaging/systemd/josephine-report.timer" "$pkgdir/usr/lib/systemd/user/josephine-report.timer"
   install -Dm644 "LICENSE-MIT" "$pkgdir/usr/share/licenses/$pkgname/LICENSE-MIT"
   install -Dm644 "LICENSE-APACHE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE-APACHE"
 }

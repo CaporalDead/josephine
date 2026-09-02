@@ -130,20 +130,75 @@ fn daemon_help_lists_run() {
         .stdout(contains("run"));
 }
 
+/// Codes 0/1/2 are the machine's health. A bad command line must not land in
+/// that band, or a status bar would read a typo as "critical".
+#[test]
+fn a_bad_flag_exits_outside_the_health_band() {
+    let output = Command::cargo_bin("josephine")
+        .unwrap()
+        .env("HOME", isolated_home("bad-flag"))
+        .env_remove("XDG_CONFIG_HOME")
+        .env_remove("XDG_DATA_HOME")
+        .args(["status", "--no-such-flag"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(64));
+}
+
+/// `--help` still succeeds: clap hands it back as an `Err`, but it isn't one.
+#[test]
+fn help_exits_zero() {
+    let output = Command::cargo_bin("josephine")
+        .unwrap()
+        .env("HOME", isolated_home("help-code"))
+        .env_remove("XDG_CONFIG_HOME")
+        .env_remove("XDG_DATA_HOME")
+        .arg("--help")
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0));
+}
+
 #[test]
 fn status_json_prints_a_json_array_on_stdout() {
+    // The exit code now carries the machine's worst severity (0/1/2), so this
+    // no longer asserts success — only that stdout is a JSON array.
     let output = Command::cargo_bin("josephine")
         .unwrap()
         .env("HOME", isolated_home("status-json"))
         .env_remove("XDG_CONFIG_HOME")
         .env_remove("XDG_DATA_HOME")
         .args(["status", "--json"])
-        .assert()
-        .success()
-        .get_output()
-        .clone();
+        .output()
+        .unwrap();
     let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert!(value.is_array());
+    assert!(matches!(output.status.code(), Some(0..=2)));
+}
+
+#[test]
+fn status_oneline_prints_one_line_and_a_severity_code() {
+    let output = Command::cargo_bin("josephine")
+        .unwrap()
+        .env("HOME", isolated_home("status-oneline"))
+        .env_remove("XDG_CONFIG_HOME")
+        .env_remove("XDG_DATA_HOME")
+        .args(["status", "--oneline"])
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let lines: Vec<_> = stdout.lines().filter(|l| !l.trim().is_empty()).collect();
+    assert_eq!(lines.len(), 1, "expected one line, got: {stdout:?}");
+    // Off a TTY the glyph degrades to an ASCII tag.
+    assert!(
+        ["[ok]", "[!]", "[x]"]
+            .iter()
+            .any(|tag| lines[0].starts_with(tag)),
+        "unexpected line: {}",
+        lines[0]
+    );
+    // Exit code is the worst severity, always one of 0/1/2.
+    assert!(matches!(output.status.code(), Some(0..=2)));
 }
 
 #[test]

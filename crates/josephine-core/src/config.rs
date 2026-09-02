@@ -17,6 +17,8 @@ pub struct Config {
     pub notifications: NotificationsConfig,
     #[serde(default)]
     pub history: HistoryConfig,
+    #[serde(default)]
+    pub forecast: ForecastConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -49,6 +51,10 @@ pub struct ChecksConfig {
     pub timesync: TimesyncCheckConfig,
     #[serde(default)]
     pub security: SecurityCheckConfig,
+    #[serde(default)]
+    pub reboot: RebootCheckConfig,
+    #[serde(default)]
+    pub pressure: PressureCheckConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -137,6 +143,11 @@ pub struct SmartCheckConfig {
     pub enabled: bool,
     #[serde(default = "default_interval_3600")]
     pub interval_secs: u64,
+    /// SSD/NVMe wear, as a percentage of rated write life used (0 = new).
+    #[serde(default = "default_smart_wear_warning")]
+    pub wear_warning: f64,
+    #[serde(default = "default_smart_wear_critical")]
+    pub wear_critical: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -207,6 +218,36 @@ pub struct SecurityCheckConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct RebootCheckConfig {
+    #[serde(default = "default_true")]
+    pub enabled: bool,
+    #[serde(default = "default_reboot_interval")]
+    pub interval_secs: u64,
+    /// `reboot_required` flag: 0 = no reboot pending, 1 = one pending.
+    /// warning = 1 surfaces a pending reboot as attention; critical = 2 keeps
+    /// it below critical (a pending reboot is never an emergency).
+    #[serde(default = "default_reboot_warning")]
+    pub warning: f64,
+    #[serde(default = "default_reboot_critical")]
+    pub critical: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct PressureCheckConfig {
+    #[serde(default = "default_true")]
+    pub enabled: bool,
+    #[serde(default = "default_pressure_interval")]
+    pub interval_secs: u64,
+    /// Memory PSI `full avg60`: the percentage of the last minute in which
+    /// *every* runnable task was stalled waiting for memory. Deliberately not
+    /// `some` — healthy work (a build, a large copy) drives that to 20–30%.
+    #[serde(default = "default_pressure_warning")]
+    pub warning: f64,
+    #[serde(default = "default_pressure_critical")]
+    pub critical: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct NotificationsConfig {
     #[serde(default = "default_true")]
     pub desktop: bool,
@@ -220,6 +261,24 @@ pub struct HistoryConfig {
     pub enabled: bool,
     #[serde(default = "default_retention")]
     pub retention_days: u32,
+}
+
+/// Trend forecasting ("prévoyance"): project stored history toward a target
+/// (a full disk, worn SSD…) and, when the trend is real and near, surface an
+/// ETA in `doctor`. Deterministic least-squares — no model, no network.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ForecastConfig {
+    #[serde(default = "default_true")]
+    pub enabled: bool,
+    /// Only surface a forecast whose target is within this many days.
+    #[serde(default = "default_forecast_horizon_days")]
+    pub horizon_days: f64,
+    /// Minimum number of hourly samples before a trend is trusted.
+    #[serde(default = "default_forecast_min_samples")]
+    pub min_samples: usize,
+    /// Minimum goodness-of-fit (R², 0..=1) before a trend is trusted.
+    #[serde(default = "default_forecast_min_fit")]
+    pub min_fit: f64,
 }
 
 fn default_true() -> bool {
@@ -321,12 +380,60 @@ fn default_security_critical() -> f64 {
     20.0
 }
 
+fn default_smart_wear_warning() -> f64 {
+    80.0
+}
+
+fn default_smart_wear_critical() -> f64 {
+    90.0
+}
+
+fn default_reboot_interval() -> u64 {
+    300
+}
+
+fn default_reboot_warning() -> f64 {
+    1.0
+}
+
+fn default_reboot_critical() -> f64 {
+    2.0
+}
+
+fn default_pressure_interval() -> u64 {
+    60
+}
+
+// Thresholds on memory PSI `full avg60`. `full` sits at 0.00 on a healthy
+// machine even under heavy load, so these are far below the `some` figures they
+// replace: a tenth of a minute with *everything* stalled is already a bad
+// minute, and systemd-oomd starts killing processes around 60%.
+fn default_pressure_warning() -> f64 {
+    10.0
+}
+
+fn default_pressure_critical() -> f64 {
+    25.0
+}
+
 fn default_warning() -> f64 {
     85.0
 }
 
 fn default_critical() -> f64 {
     95.0
+}
+
+fn default_forecast_horizon_days() -> f64 {
+    30.0
+}
+
+fn default_forecast_min_samples() -> usize {
+    12
+}
+
+fn default_forecast_min_fit() -> f64 {
+    0.5
 }
 
 fn default_retention() -> u32 {
@@ -386,6 +493,8 @@ impl Default for ChecksConfig {
             filesystem: FilesystemCheckConfig::default(),
             timesync: TimesyncCheckConfig::default(),
             security: SecurityCheckConfig::default(),
+            reboot: RebootCheckConfig::default(),
+            pressure: PressureCheckConfig::default(),
         }
     }
 }
@@ -428,6 +537,8 @@ impl Default for SmartCheckConfig {
         Self {
             enabled: false,
             interval_secs: default_interval_3600(),
+            wear_warning: default_smart_wear_warning(),
+            wear_critical: default_smart_wear_critical(),
         }
     }
 }
@@ -473,6 +584,28 @@ impl Default for SecurityCheckConfig {
             interval_secs: default_security_interval(),
             warning: default_security_warning(),
             critical: default_security_critical(),
+        }
+    }
+}
+
+impl Default for RebootCheckConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            interval_secs: default_reboot_interval(),
+            warning: default_reboot_warning(),
+            critical: default_reboot_critical(),
+        }
+    }
+}
+
+impl Default for PressureCheckConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            interval_secs: default_pressure_interval(),
+            warning: default_pressure_warning(),
+            critical: default_pressure_critical(),
         }
     }
 }
@@ -530,6 +663,17 @@ impl Default for HistoryConfig {
     }
 }
 
+impl Default for ForecastConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            horizon_days: default_forecast_horizon_days(),
+            min_samples: default_forecast_min_samples(),
+            min_fit: default_forecast_min_fit(),
+        }
+    }
+}
+
 impl Config {
     pub fn load(path: &Path) -> Result<Self> {
         let config = if !path.exists() {
@@ -571,12 +715,32 @@ impl Config {
         Self::validate_filesystem(&self.checks.filesystem)?;
         Self::validate_timesync(&self.checks.timesync)?;
         Self::validate_security(&self.checks.security)?;
+        Self::validate_reboot(&self.checks.reboot)?;
+        Self::validate_pressure(&self.checks.pressure)?;
         if self.checks.smart.interval_secs < 5 {
             bail!("checks.smart.interval_secs must be ≥ 5 seconds");
+        }
+        if !(0.0..=100.0).contains(&self.checks.smart.wear_warning)
+            || !(0.0..=100.0).contains(&self.checks.smart.wear_critical)
+        {
+            bail!("checks.smart.wear_warning and wear_critical must be between 0 and 100 %");
+        }
+        if self.checks.smart.wear_warning >= self.checks.smart.wear_critical {
+            bail!("checks.smart.wear_warning must be less than wear_critical");
         }
 
         if self.history.retention_days == 0 {
             bail!("history.retention_days must be greater than 0");
+        }
+
+        if self.forecast.horizon_days <= 0.0 {
+            bail!("forecast.horizon_days must be greater than 0");
+        }
+        if self.forecast.min_samples < 2 {
+            bail!("forecast.min_samples must be at least 2");
+        }
+        if !(0.0..=1.0).contains(&self.forecast.min_fit) {
+            bail!("forecast.min_fit must be between 0 and 1");
         }
 
         Ok(())
@@ -725,6 +889,32 @@ impl Config {
         }
         if c.warning >= c.critical {
             bail!("checks.security.warning must be less than critical");
+        }
+        Ok(())
+    }
+
+    fn validate_reboot(c: &RebootCheckConfig) -> Result<()> {
+        if c.interval_secs < 5 {
+            bail!("checks.reboot.interval_secs must be ≥ 5 seconds");
+        }
+        if c.warning < 1.0 || c.critical < 1.0 {
+            bail!("checks.reboot.warning and critical must be ≥ 1");
+        }
+        if c.warning >= c.critical {
+            bail!("checks.reboot.warning must be less than critical");
+        }
+        Ok(())
+    }
+
+    fn validate_pressure(c: &PressureCheckConfig) -> Result<()> {
+        if c.interval_secs < 5 {
+            bail!("checks.pressure.interval_secs must be ≥ 5 seconds");
+        }
+        if !(0.0..=100.0).contains(&c.warning) || !(0.0..=100.0).contains(&c.critical) {
+            bail!("checks.pressure.warning and critical must be between 0 and 100 %");
+        }
+        if c.warning >= c.critical {
+            bail!("checks.pressure.warning must be less than critical");
         }
         Ok(())
     }

@@ -25,10 +25,12 @@ computer.**
 
 ## Features
 
-- **Fourteen built-in checks** — CPU, memory, disk, temperature, systemd services,
+- **Sixteen built-in checks** — CPU, memory, disk, temperature, systemd services,
   package updates (apt / dnf / pacman), local network (gateway latency), battery,
-  inode usage, SMART disk health (opt-in), kernel incidents (OOM / oops),
-  read-only filesystem remounts, NTP clock sync and recent failed logins.
+  inode usage, SMART disk health and SSD/NVMe wear (opt-in), kernel incidents
+  (OOM / oops), read-only filesystem remounts, NTP clock sync, recent failed
+  logins, a pending reboot after a kernel or library update, and system
+  pressure (PSI: memory/CPU/IO stalls, before the OOM killer steps in).
 - **Warm notifications** — plain-language desktop alerts that escalate only when
   it helps; never `ERROR` / `FATAL` / `PANIC`. She varies her phrasing so it
   never feels canned — while the facts (the number, the command) stay exact.
@@ -39,6 +41,11 @@ computer.**
   note or two, or something that needs you now), then check-by-check
   diagnostics; `--verbose` adds thresholds, the top 10 processes and each
   check's collection interval.
+- **Foresight** — `doctor` closes with a short heads-up when a slow trend is
+  heading somewhere within the month (a filling disk, exhausting inodes, a
+  worn SSD): *"Disk: full in ~6 days"*. A plain, deterministic projection of the
+  local history — never a guess, never a notification, only when the trend is
+  real and near.
 - **`explain`** — what each check watches, why it matters, and how to act.
 - **Self-update** — `josephine update` checks GitHub Releases and installs the
   package matching your install (`.deb` / `.rpm`); reaches the network only when
@@ -148,6 +155,7 @@ cargo install --git https://github.com/systm-d/josephine josephine
 ```sh
 josephine               # quick status summary (default)
 josephine status        # CPU, memory, disk, temperature, systemd, updates at a glance
+josephine status --oneline  # one compact line for a status bar (Waybar, polybar, tmux)
 josephine doctor        # full diagnostics, and what's left to do
 josephine doctor -v     # verbose: thresholds, top 10 processes, intervals
 josephine history       # last 24 h: min/avg/max + sparkline trends, and events
@@ -156,6 +164,7 @@ josephine daemon status # daemon state (PID, uptime)
 josephine config show   # print the current configuration
 josephine config edit   # edit the config in $EDITOR, then re-validate
 josephine report        # dated plain-text health report (-o writes to a file)
+josephine report --since 7d  # add a digest of the week's events
 josephine clean         # preview reclaimable disk space (--apply clears caches)
 josephine explain       # what each check watches and how to act
 josephine explain disk  # full explanation for one check
@@ -163,6 +172,16 @@ josephine notify test   # send a test desktop notification
 josephine update        # check GitHub for a newer version and install it
 josephine --version
 ```
+
+`josephine status` sets its exit code from the worst check it finds — `0` all
+clear, `1` something to look at, `2` something critical — so it drops straight
+into a script or a status bar. Pair it with `--oneline` for a single glanceable
+line, or `--json` for the full machine-readable view.
+
+Those three codes only ever mean health. If Joséphine can't answer at all she
+exits outside that band, following `sysexits(3)`: `64` if the command line was
+malformed, `70` if the command ran and failed. So a status bar can tell a
+critical machine from a broken invocation.
 
 `josephine update` reaches the network only when you run it — never in the
 background. It detects how Joséphine was installed (`.deb`/`.rpm`/…), downloads
@@ -174,6 +193,14 @@ unit ([`packaging/systemd/josephine.service`](packaging/systemd/josephine.servic
 
 ```sh
 systemctl --user enable --now josephine
+```
+
+For a gentle weekly digest of what happened, enable the bundled (opt-in) timer;
+it runs `josephine report --since 7d` and prints to the journal
+(`journalctl --user -u josephine-report`):
+
+```sh
+systemctl --user enable --now josephine-report.timer
 ```
 
 Configuration lives at `~/.config/josephine/config.yaml` (created on first run).

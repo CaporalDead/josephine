@@ -6,6 +6,8 @@ mod inode;
 mod kernel;
 mod memory;
 mod network;
+mod pressure;
+mod reboot;
 mod security;
 mod smart;
 mod systemd;
@@ -21,6 +23,8 @@ pub use inode::InodeCheck;
 pub use kernel::KernelCheck;
 pub use memory::MemoryCheck;
 pub use network::NetworkCheck;
+pub use pressure::PressureCheck;
+pub use reboot::RebootCheck;
 pub use security::SecurityCheck;
 pub use smart::SmartCheck;
 pub use systemd::SystemdCheck;
@@ -76,6 +80,12 @@ pub fn build_checks(config: &ChecksConfig) -> Vec<Box<dyn Check>> {
     if config.security.enabled {
         checks.push(Box::new(SecurityCheck::new(config.security.clone())));
     }
+    if config.reboot.enabled {
+        checks.push(Box::new(RebootCheck::new(config.reboot.clone())));
+    }
+    if config.pressure.enabled {
+        checks.push(Box::new(PressureCheck::new(config.pressure.clone())));
+    }
 
     checks
 }
@@ -96,6 +106,8 @@ pub fn interval_for_check(name: &str, config: &ChecksConfig) -> u64 {
         "filesystem" => config.filesystem.interval_secs,
         "timesync" => config.timesync.interval_secs,
         "security" => config.security.interval_secs,
+        "reboot" => config.reboot.interval_secs,
+        "pressure" => config.pressure.interval_secs,
         _ => 60,
     }
 }

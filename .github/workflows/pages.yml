@@ -28,7 +28,7 @@ jobs:
         uses: actions/configure-pages@v6
         with:
           enablement: true
-      - uses: taiki-e/install-action@v2
+      - uses: taiki-e/install-action@v2.85.6
         with:
           tool: zola@0.19.2
       - name: Build site

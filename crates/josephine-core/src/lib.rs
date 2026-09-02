@@ -2,6 +2,7 @@ pub mod check;
 pub mod checks;
 pub mod config;
 pub mod daemon;
+pub mod forecast;
 pub mod i18n;
 pub mod messages;
 pub mod notify;

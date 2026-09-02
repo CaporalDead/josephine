@@ -35,8 +35,11 @@ pkgs.testers.runNixOSTest {
     machine.succeed("josephine --version")
 
     # 2. status runs, and the filesystem check stays "ok" despite the
-    #    read-only /nix/store that NixOS mounts by default.
-    machine.succeed("josephine status --json > /tmp/status.json")
+    #    read-only /nix/store that NixOS mounts by default. status now sets its
+    #    exit code from the worst severity (0/1/2), so we capture the JSON with
+    #    execute() rather than asserting success, and just check the code shape.
+    status, _ = machine.execute("josephine status --json > /tmp/status.json")
+    assert status in (0, 1, 2), f"unexpected status exit code: {status}"
     machine.succeed("grep -q '/nix/store' /proc/mounts")
     machine.succeed(
         "jq -e '.[] | select(.check == \"filesystem\") | .severity == \"ok\"' /tmp/status.json"

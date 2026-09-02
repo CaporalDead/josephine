@@ -198,6 +198,18 @@ fn thresholds_for(name: &str, config: &Config) -> CheckThresholds {
             warning: config.checks.security.warning,
             critical: config.checks.security.critical,
         },
+        "reboot" => CheckThresholds {
+            enabled: config.checks.reboot.enabled,
+            interval_secs: config.checks.reboot.interval_secs,
+            warning: config.checks.reboot.warning,
+            critical: config.checks.reboot.critical,
+        },
+        "pressure" => CheckThresholds {
+            enabled: config.checks.pressure.enabled,
+            interval_secs: config.checks.pressure.interval_secs,
+            warning: config.checks.pressure.warning,
+            critical: config.checks.pressure.critical,
+        },
         _ => CheckThresholds::default(),
     }
 }

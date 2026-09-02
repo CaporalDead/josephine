@@ -50,6 +50,22 @@ pub fn status_glyph(severity: Severity) -> String {
     }
 }
 
+/// Compact status token for the one-line output — same shape+colour glyph as
+/// [`status_glyph`], but without the column padding, so it reads cleanly in a
+/// status bar. Off a terminal it degrades to a bare `[ok]`/`[!]`/`[x]` tag.
+pub fn oneline_glyph(severity: Severity) -> String {
+    let (glyph, plain) = match severity {
+        Severity::Info => ("●", "[ok]"),
+        Severity::Attention => ("▲", "[!]"),
+        Severity::Critique => ("✕", "[x]"),
+    };
+    if is_tty() {
+        severity_paint(glyph, severity)
+    } else {
+        plain.to_string()
+    }
+}
+
 /// Load a user banner from `<config dir>/banner.txt`, if present and non-empty.
 ///
 /// Private helper for `sober_header`, which prints the banner (if any) above
@@ -182,6 +198,8 @@ pub fn check_label(name: &str) -> &'static str {
         "filesystem" => i18n::t("Filesystem", "Système de fichiers"),
         "timesync" => i18n::t("Clock", "Horloge"),
         "security" => i18n::t("Security", "Sécurité"),
+        "reboot" => i18n::t("Reboot", "Redémarrage"),
+        "pressure" => i18n::t("Pressure", "Pression"),
         _ => i18n::t("System", "Système"),
     }
 }
@@ -224,6 +242,11 @@ pub fn primary_metric(result: &josephine_core::check::CheckResult) -> Option<&Me
         "filesystem" => result.metrics.iter().find(|m| m.name == "readonly_mounts"),
         "timesync" => result.metrics.iter().find(|m| m.name == "clock_unsynced"),
         "security" => result.metrics.iter().find(|m| m.name == "failed_auths"),
+        "reboot" => result.metrics.iter().find(|m| m.name == "reboot_required"),
+        "pressure" => result
+            .metrics
+            .iter()
+            .find(|m| m.name == "memory_pressure_avg60"),
         _ => result.metrics.first(),
     }
 }

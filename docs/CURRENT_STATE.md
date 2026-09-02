@@ -11,7 +11,7 @@ Ce document est la **source de vérité** pour l'état du dépôt. En cas de div
 
 ## Livré
 
-### Checks (14)
+### Checks (15)
 
 | Check | Métriques principales | Source |
 |-------|----------------------|--------|
@@ -24,11 +24,13 @@ Ce document est la **source de vérité** pour l'état du dépôt. En cas de div
 | `network` | `gateway_latency_ms` (LAN, 100 % local) | `/proc/net/route`, `ping` |
 | `battery` | `charge_percent`, `battery_depletion_percent` | `/sys/class/power_supply` |
 | `inode` | `inode_usage_percent_worst` | `df -iPT`* |
-| `smart` | `smart_failing` (opt-in, root requis) | `smartctl -H` |
+| `smart` | `smart_failing`, `smart_wear_percent` (opt-in, root requis) | `smartctl -H`, `smartctl -j -a` |
 | `kernel` | `kernel_incidents` (OOM, oops…) | `journalctl -k` |
 | `filesystem` | `readonly_mounts` | `/proc/mounts` |
 | `timesync` | `clock_unsynced` | `timedatectl` |
 | `security` | `failed_auths` | `journalctl` |
+| `reboot` | `reboot_required` | `/run/reboot-required`, `needs-restarting`, `/run/{booted,current}-system`, `/lib/modules` |
+| `pressure` | `memory_pressure_full_avg60` (seuil) + `some` cpu/io (info) | `/proc/pressure/{memory,cpu,io}` |
 
 \* Le `T` ajoute le type de filesystem à la sortie de `df`, pour ignorer les
 montages en lecture seule de type image (`squashfs`, `iso9660`, `erofs` — ex.
@@ -40,12 +42,12 @@ Chaque check implémente le trait `Check` (`josephine-core/src/check.rs`), est i
 
 | Commande | Statut |
 |----------|--------|
-| `status` (défaut, `--json`) | ✅ |
+| `status` (défaut, `--json`, `--oneline`, code de sortie 0/1/2 ; 64/70 en cas d’échec) | ✅ |
 | `doctor` (`--verbose`, `--json`) | ✅ |
 | `history` | ✅ |
 | `daemon start/stop/restart/status/logs/run` | ✅ |
 | `config show/validate/edit` | ✅ |
-| `clean` (`--apply`), `report` (`-o`, `--json`) | ✅ |
+| `clean` (`--apply`), `report` (`-o`, `--json`, `--since`) | ✅ |
 | `notify test` | ✅ |
 | `update` (`--check`, `--yes`) | ✅ |
 | `completions <bash\|zsh\|fish…>` | ✅ |
@@ -154,6 +156,11 @@ Structures notables :
 - `FilesystemCheckConfig`, `TimesyncCheckConfig`, `SecurityCheckConfig` — seuils dédiés (pas les défauts 85/95)
 - `TemperatureThresholds` — seuils en °C (20–150)
 - `SystemdCheckConfig` — seuils `failed_*` et `restarts_*` (comptes entiers ≥ 1)
+- `ForecastConfig` — prévoyance (régression déterministe sur l'historique) :
+  `horizon_days`, `min_samples`, `min_fit` (défauts 30 / 12 / 0.5). Le module
+  `forecast.rs` projette disque/inodes/usure SSD — pas la mémoire, qui est
+  libérée et non accumulée ; rendu **doctor-only**
+  (section « Prévoyance »), sans notification.
 
 Validation dans `config.rs::validate()`.
 

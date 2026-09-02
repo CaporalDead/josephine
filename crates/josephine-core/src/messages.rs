@@ -26,11 +26,14 @@ pub fn alert_message(
         "network" => network_alert(metric.value, lang),
         "battery" => battery_alert(metric.value, lang),
         "inode" => inode_alert(metric.value, lang),
+        "smart" if metric.name == "smart_wear_percent" => smart_wear_alert(metric.value, lang),
         "smart" => smart_alert(metric.value, lang),
         "kernel" => kernel_alert(metric.value, lang),
         "filesystem" => filesystem_alert(metric.value, lang),
         "timesync" => timesync_alert(metric.value, lang),
         "security" => security_alert(metric.value, lang),
+        "reboot" => reboot_alert(lang),
+        "pressure" => pressure_alert(metric.value, lang),
         other => match lang {
             Lang::En => format!(
                 "{other} is out of range ({:.1} {}). \
@@ -152,6 +155,16 @@ pub fn recovery_message(check_name: &str, metric: &Metric, lang: Lang) -> String
         "security" => match lang {
             Lang::En => "No more failed login attempts in the last hour.".into(),
             Lang::Fr => "Plus aucune tentative de connexion échouée sur la dernière heure.".into(),
+        },
+        "reboot" => match lang {
+            Lang::En => "No restart pending anymore — you're on the latest kernel.".into(),
+            Lang::Fr => "Plus de redémarrage en attente — vous êtes sur le dernier noyau.".into(),
+        },
+        "pressure" => match lang {
+            Lang::En => "Memory pressure is back to normal — nothing's starved for RAM.".into(),
+            Lang::Fr => {
+                "La pression mémoire est revenue à la normale — plus rien ne manque de RAM.".into()
+            }
         },
         other => match lang {
             Lang::En => format!(
@@ -411,6 +424,19 @@ fn smart_alert(failing: f64, lang: Lang) -> String {
     }
 }
 
+fn smart_wear_alert(percent: f64, lang: Lang) -> String {
+    match lang {
+        Lang::En => format!(
+            "A disk is at {percent:.0}% of its rated write life.\n\n\
+             Plan a replacement and keep your backups current."
+        ),
+        Lang::Fr => format!(
+            "Un disque est à {percent:.0} % de sa durée d'écriture prévue.\n\n\
+             Prévoyez un remplacement et gardez vos sauvegardes à jour."
+        ),
+    }
+}
+
 fn kernel_alert(count: f64, lang: Lang) -> String {
     let n = count as u64;
     match lang {
@@ -482,6 +508,33 @@ fn security_alert(count: f64, lang: Lang) -> String {
         Lang::Fr => format!(
             "{n} tentative(s) de connexion échouée(s) sur la dernière heure. \
              Si ce n'est pas vous, vérifiez `journalctl -u sshd`."
+        ),
+    }
+}
+
+fn reboot_alert(lang: Lang) -> String {
+    match lang {
+        Lang::En => "A restart is needed to finish applying updates (kernel or libraries). \
+                     Reboot when convenient: `systemctl reboot`."
+            .to_string(),
+        Lang::Fr => "Un redémarrage est nécessaire pour finir d'appliquer des mises à jour \
+                     (noyau ou bibliothèques). Redémarrez quand ça vous arrange : \
+                     `systemctl reboot`."
+            .to_string(),
+    }
+}
+
+fn pressure_alert(percent: f64, lang: Lang) -> String {
+    match lang {
+        Lang::En => format!(
+            "Memory pressure is high ({percent:.0}% of the last minute with everything \
+             stalled). The machine is starved for RAM — close the biggest user before it \
+             swaps hard."
+        ),
+        Lang::Fr => format!(
+            "La pression mémoire est élevée ({percent:.0} % de la dernière minute tout à \
+             l'arrêt). La machine manque de RAM — fermez le plus gros avant que ça ne \
+             swappe fort."
         ),
     }
 }
