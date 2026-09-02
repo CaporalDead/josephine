@@ -157,6 +157,7 @@ josephine daemon status # daemon state (PID, uptime)
 josephine config show   # print the current configuration
 josephine config edit   # edit the config in $EDITOR, then re-validate
 josephine report        # dated plain-text health report (-o writes to a file)
+josephine report --since 7d  # add a digest of the week's events
 josephine clean         # preview reclaimable disk space (--apply clears caches)
 josephine explain       # what each check watches and how to act
 josephine explain disk  # full explanation for one check
@@ -185,6 +186,14 @@ unit ([`packaging/systemd/josephine.service`](packaging/systemd/josephine.servic
 
 ```sh
 systemctl --user enable --now josephine
+```
+
+For a gentle weekly digest of what happened, enable the bundled (opt-in) timer;
+it runs `josephine report --since 7d` and prints to the journal
+(`journalctl --user -u josephine-report`):
+
+```sh
+systemctl --user enable --now josephine-report.timer
 ```
 
 Configuration lives at `~/.config/josephine/config.yaml` (created on first run).

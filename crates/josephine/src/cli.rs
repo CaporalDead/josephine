@@ -74,6 +74,9 @@ enum Commands {
         /// Print machine-readable JSON to stdout (implies stdout; ignores `--output`)
         #[arg(long)]
         json: bool,
+        /// Append a digest of events over a window, e.g. `7d` or `24h`
+        #[arg(long)]
+        since: Option<String>,
     },
     /// Desktop notifications
     Notify {
@@ -233,8 +236,12 @@ async fn dispatch() -> Result<ExitCode> {
             explain_cmd::run(check.as_deref())?;
             0
         }
-        Some(Commands::Report { output, json }) => {
-            report_cmd::run(output, json)?;
+        Some(Commands::Report {
+            output,
+            json,
+            since,
+        }) => {
+            report_cmd::run(output, json, since)?;
             0
         }
         Some(Commands::Notify { action }) => {

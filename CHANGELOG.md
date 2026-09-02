@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   band, following sysexits(3) — `64` for a malformed command line, `70` for a
   command that ran and failed — so a script can always tell "the machine is
   critical" from "Joséphine broke".
+- **A gentle weekly digest.** `josephine report --since <window>` (e.g. `7d`,
+  `24h`) appends a summary of the events over that window to the report — how
+  many, what changed, and when. An opt-in systemd *user* timer
+  (`josephine-report.timer`, shipped in the `.deb`/`.rpm`/AUR packages) runs it
+  weekly and prints to the journal (`journalctl --user -u josephine-report`): a
+  look back, never a push you didn't ask for.
 
 ### Removed
 
