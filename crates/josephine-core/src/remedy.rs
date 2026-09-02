@@ -260,6 +260,21 @@ const ADVICE: &[Advice] = &[
             "Enregistrez, puis redémarrez quand vous voulez : `systemctl reboot`.",
         ),
     },
+    Advice {
+        name: "pressure",
+        what: (
+            "Time tasks spend stalled waiting for memory, CPU or IO (Linux PSI).",
+            "Le temps passé par les tâches à attendre mémoire, CPU ou E/S (PSI).",
+        ),
+        why: (
+            "Rising pressure means the machine is thrashing — it slows well before it fails.",
+            "Une pression qui monte signale du thrashing — ça ralentit bien avant de lâcher.",
+        ),
+        remedy: (
+            "Close the biggest memory user; add swap or RAM if it keeps stalling.",
+            "Fermez le plus gros consommateur mémoire ; ajoutez swap ou RAM.",
+        ),
+    },
 ];
 
 /// The advice for one check, by its internal name (`cpu`, `disk`, …).
@@ -384,7 +399,7 @@ mod tests {
         config.smart.enabled = true;
         let checks = crate::checks::build_checks(&config);
 
-        assert_eq!(checks.len(), 15, "expected fifteen checks to be built");
+        assert_eq!(checks.len(), 16, "expected sixteen checks to be built");
         for check in &checks {
             assert!(
                 advice(check.name()).is_some(),

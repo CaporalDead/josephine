@@ -30,6 +30,7 @@ Ce document est la **source de vérité** pour l'état du dépôt. En cas de div
 | `timesync` | `clock_unsynced` | `timedatectl` |
 | `security` | `failed_auths` | `journalctl` |
 | `reboot` | `reboot_required` | `/run/reboot-required`, `needs-restarting`, `/run/{booted,current}-system`, `/lib/modules` |
+| `pressure` | `memory_pressure_full_avg60` (seuil) + `some` cpu/io (info) | `/proc/pressure/{memory,cpu,io}` |
 
 \* Le `T` ajoute le type de filesystem à la sortie de `df`, pour ignorer les
 montages en lecture seule de type image (`squashfs`, `iso9660`, `erofs` — ex.
