@@ -238,7 +238,9 @@ pub struct PressureCheckConfig {
     pub enabled: bool,
     #[serde(default = "default_pressure_interval")]
     pub interval_secs: u64,
-    /// Memory PSI `some avg60`, as a percentage of the last minute stalled.
+    /// Memory PSI `full avg60`: the percentage of the last minute in which
+    /// *every* runnable task was stalled waiting for memory. Deliberately not
+    /// `some` — healthy work (a build, a large copy) drives that to 20–30%.
     #[serde(default = "default_pressure_warning")]
     pub warning: f64,
     #[serde(default = "default_pressure_critical")]
@@ -402,12 +404,16 @@ fn default_pressure_interval() -> u64 {
     60
 }
 
+// Thresholds on memory PSI `full avg60`. `full` sits at 0.00 on a healthy
+// machine even under heavy load, so these are far below the `some` figures they
+// replace: a tenth of a minute with *everything* stalled is already a bad
+// minute, and systemd-oomd starts killing processes around 60%.
 fn default_pressure_warning() -> f64 {
-    20.0
+    10.0
 }
 
 fn default_pressure_critical() -> f64 {
-    50.0
+    25.0
 }
 
 fn default_warning() -> f64 {

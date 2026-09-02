@@ -203,6 +203,7 @@ fn thresholds_for(name: &str, config: &Config) -> CheckThresholds {
             interval_secs: config.checks.reboot.interval_secs,
             warning: config.checks.reboot.warning,
             critical: config.checks.reboot.critical,
+        },
         "pressure" => CheckThresholds {
             enabled: config.checks.pressure.enabled,
             interval_secs: config.checks.pressure.interval_secs,

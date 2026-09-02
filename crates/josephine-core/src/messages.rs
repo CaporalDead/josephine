@@ -527,12 +527,14 @@ fn reboot_alert(lang: Lang) -> String {
 fn pressure_alert(percent: f64, lang: Lang) -> String {
     match lang {
         Lang::En => format!(
-            "Memory pressure is high ({percent:.0}% of the last minute stalled). \
-             Something is starved for RAM — close the biggest user before it swaps hard."
+            "Memory pressure is high ({percent:.0}% of the last minute with everything \
+             stalled). The machine is starved for RAM — close the biggest user before it \
+             swaps hard."
         ),
         Lang::Fr => format!(
-            "La pression mémoire est élevée ({percent:.0} % de la dernière minute bloquée). \
-             Quelque chose manque de RAM — fermez le plus gros avant que ça ne swappe fort."
+            "La pression mémoire est élevée ({percent:.0} % de la dernière minute tout à \
+             l'arrêt). La machine manque de RAM — fermez le plus gros avant que ça ne \
+             swappe fort."
         ),
     }
 }
