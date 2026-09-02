@@ -37,12 +37,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Foresight in `doctor` (the "prévoyance" pillar).** Joséphine now projects the
   history she already keeps and, when a slow trend is heading somewhere within
   the month, closes `doctor` with a short heads-up: *"Disk: full in ~6 days
-  (91% now, +1.4%/day)"*. It covers disk, inodes, memory and (opt-in) SSD wear.
+  (91% now, +1.4%/day)"*. It covers disk, inodes and (opt-in) SSD wear —
+  things that genuinely fill up and stay filled, which is why memory is not
+  among them: it is reclaimed, not accumulated.
   The projection is a plain least-squares line fit — deterministic, fully local,
   no model — and it stays silent unless there are enough samples, the fit is
-  good, the trend actually heads toward the limit, and the target is near
-  (guards configurable under `forecast`). doctor-only for now: no notification,
-  and `--json` is unchanged.
+  good, the trend still holds over the most recent third of the window, it
+  actually heads toward the limit, and the target is near (guards configurable
+  under `forecast`). That recent-stretch check is what keeps a one-off step —
+  a big download, a restore — from being read as a slope and projected into an
+  ETA. doctor-only for now: no notification, and `--json` is unchanged.
 
 ### Removed
 

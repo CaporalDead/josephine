@@ -48,12 +48,10 @@ const TARGETS: &[Target] = &[
         goal: 100.0,
         kind: Kind::Fill,
     },
-    Target {
-        check: "memory",
-        metric: "usage_percent",
-        goal: 100.0,
-        kind: Kind::Fill,
-    },
+    // Deliberately not memory: it is reclaimed, not accumulated, so a rising
+    // week says nothing about next week and "Memory: full in ~9 days" is a
+    // frightening claim about something that is working as designed. Foresight
+    // only projects quantities that genuinely fill up and stay filled.
     Target {
         check: "smart",
         metric: "smart_wear_percent",

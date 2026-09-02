@@ -156,7 +156,8 @@ Structures notables :
 - `SystemdCheckConfig` — seuils `failed_*` et `restarts_*` (comptes entiers ≥ 1)
 - `ForecastConfig` — prévoyance (régression déterministe sur l'historique) :
   `horizon_days`, `min_samples`, `min_fit` (défauts 30 / 12 / 0.5). Le module
-  `forecast.rs` projette disque/inodes/mémoire/usure SSD ; rendu **doctor-only**
+  `forecast.rs` projette disque/inodes/usure SSD — pas la mémoire, qui est
+  libérée et non accumulée ; rendu **doctor-only**
   (section « Prévoyance »), sans notification.
 
 Validation dans `config.rs::validate()`.
