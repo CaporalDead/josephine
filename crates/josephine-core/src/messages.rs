@@ -32,6 +32,7 @@ pub fn alert_message(
         "filesystem" => filesystem_alert(metric.value, lang),
         "timesync" => timesync_alert(metric.value, lang),
         "security" => security_alert(metric.value, lang),
+        "reboot" => reboot_alert(lang),
         other => match lang {
             Lang::En => format!(
                 "{other} is out of range ({:.1} {}). \
@@ -153,6 +154,10 @@ pub fn recovery_message(check_name: &str, metric: &Metric, lang: Lang) -> String
         "security" => match lang {
             Lang::En => "No more failed login attempts in the last hour.".into(),
             Lang::Fr => "Plus aucune tentative de connexion échouée sur la dernière heure.".into(),
+        },
+        "reboot" => match lang {
+            Lang::En => "No restart pending anymore — you're on the latest kernel.".into(),
+            Lang::Fr => "Plus de redémarrage en attente — vous êtes sur le dernier noyau.".into(),
         },
         other => match lang {
             Lang::En => format!(
@@ -497,6 +502,18 @@ fn security_alert(count: f64, lang: Lang) -> String {
             "{n} tentative(s) de connexion échouée(s) sur la dernière heure. \
              Si ce n'est pas vous, vérifiez `journalctl -u sshd`."
         ),
+    }
+}
+
+fn reboot_alert(lang: Lang) -> String {
+    match lang {
+        Lang::En => "A restart is needed to finish applying updates (kernel or libraries). \
+                     Reboot when convenient: `systemctl reboot`."
+            .to_string(),
+        Lang::Fr => "Un redémarrage est nécessaire pour finir d'appliquer des mises à jour \
+                     (noyau ou bibliothèques). Redémarrez quand ça vous arrange : \
+                     `systemctl reboot`."
+            .to_string(),
     }
 }
 

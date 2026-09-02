@@ -25,10 +25,11 @@ computer.**
 
 ## Features
 
-- **Fourteen built-in checks** — CPU, memory, disk, temperature, systemd services,
+- **Fifteen built-in checks** — CPU, memory, disk, temperature, systemd services,
   package updates (apt / dnf / pacman), local network (gateway latency), battery,
-  inode usage, SMART disk health and SSD/NVMe wear (opt-in), kernel incidents (OOM / oops),
-  read-only filesystem remounts, NTP clock sync and recent failed logins.
+  inode usage, SMART disk health and SSD/NVMe wear (opt-in), kernel incidents
+  (OOM / oops), read-only filesystem remounts, NTP clock sync, recent failed
+  logins and a pending reboot after a kernel or library update.
 - **Warm notifications** — plain-language desktop alerts that escalate only when
   it helps; never `ERROR` / `FATAL` / `PANIC`. She varies her phrasing so it
   never feels canned — while the facts (the number, the command) stay exact.
