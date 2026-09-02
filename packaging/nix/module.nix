@@ -7,7 +7,7 @@
 # pointed at the package in the Nix store instead of /usr/bin.
 let
   # Shared identity, kept in one place so the two module flavours cannot drift.
-  serviceDescription = "Joséphine - your computer's guardian spirit";
+  serviceDescription = "Joséphine - your computer's guardian angel";
   documentationUrl = "https://github.com/systm-d/josephine";
 
   packageOption =
