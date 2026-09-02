@@ -39,6 +39,11 @@ computer.**
   note or two, or something that needs you now), then check-by-check
   diagnostics; `--verbose` adds thresholds, the top 10 processes and each
   check's collection interval.
+- **Foresight** — `doctor` closes with a short heads-up when a slow trend is
+  heading somewhere within the month (a filling disk, exhausting inodes, a
+  worn SSD): *"Disk: full in ~6 days"*. A plain, deterministic projection of the
+  local history — never a guess, never a notification, only when the trend is
+  real and near.
 - **`explain`** — what each check watches, why it matters, and how to act.
 - **Self-update** — `josephine update` checks GitHub Releases and installs the
   package matching your install (`.deb` / `.rpm`); reaches the network only when

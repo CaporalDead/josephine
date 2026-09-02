@@ -9,7 +9,7 @@ use josephine_core::voice;
 use super::bars::{BAR_WIDTH, bar_plain};
 use super::style::{check_label, format_metric_value, metric_scale, primary_metric};
 
-pub fn print_doctor(results: &[CheckResult], config: &Config, verbose: bool) {
+pub fn print_doctor(results: &[CheckResult], config: &Config, verbose: bool, foresight: &[String]) {
     let worst = results
         .iter()
         .map(CheckResult::worst_severity)
@@ -30,6 +30,7 @@ pub fn print_doctor(results: &[CheckResult], config: &Config, verbose: bool) {
     for result in results {
         print_check_block(result, config, verbose);
     }
+    print_foresight_section(foresight);
     print_todo_section(results);
     println!();
     super::style::sober_footer(footer_hint(verbose));
@@ -62,6 +63,20 @@ fn print_check_block(result: &CheckResult, config: &Config, verbose: bool) {
     let label = check_label(&result.check_name);
     println!(" {glyph}  {label} · {}", state_word(severity));
     for line in detail_lines(result, config, verbose) {
+        println!("    {line}");
+    }
+}
+
+/// The forward-looking section: where the slow trends are heading. Prints
+/// nothing unless a forecast crossed its horizon, so a quiet machine stays
+/// quiet — Joséphine only speaks when the trend is real and near.
+fn print_foresight_section(foresight: &[String]) {
+    if foresight.is_empty() {
+        return;
+    }
+    println!();
+    println!("  {}", i18n::t("Looking ahead", "Prévoyance"));
+    for line in foresight {
         println!("    {line}");
     }
 }
