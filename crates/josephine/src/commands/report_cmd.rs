@@ -58,18 +58,35 @@ pub fn run(output: Option<PathBuf>, json: bool, since: Option<String>) -> Result
 
 /// The digest of events over a window: how far back, and what happened.
 struct Digest {
-    window: String,
+    window: Window,
     events: Vec<EventRecord>,
+    /// The window held more events than [`DIGEST_LIMIT`]; `events` keeps the
+    /// most recent ones. The count line has to say so, or it reads as a total.
+    truncated: bool,
+}
+
+/// How far back a digest looks, kept as a count and a unit rather than a
+/// rendered label: French has to agree in gender and number with the sentence
+/// it lands in, which a finished "3 heures" string cannot survive.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum Window {
+    Days(i64),
+    Hours(i64),
 }
 
 fn build_digest(spec: &str) -> Result<Digest> {
     let hours = parse_since(spec)?;
     let paths = Paths::new()?;
     let storage = Storage::open(&paths)?;
-    let events = storage.events_since(hours, DIGEST_LIMIT)?;
+    // Ask for one more than we show: if it comes back, the window was busier
+    // than the cap and the digest is an excerpt, not a tally.
+    let mut events = storage.events_since(hours, DIGEST_LIMIT + 1)?;
+    let truncated = events.len() > DIGEST_LIMIT;
+    events.truncate(DIGEST_LIMIT);
     Ok(Digest {
-        window: window_label(hours),
+        window: window(hours),
         events,
+        truncated,
     })
 }
 
@@ -100,22 +117,27 @@ fn parse_since(spec: &str) -> Result<i64> {
     Ok(n * per)
 }
 
-fn window_label(hours: i64) -> String {
+fn window(hours: i64) -> Window {
     if hours % 24 == 0 {
-        let days = hours / 24;
-        match (i18n::lang(), days) {
-            (Lang::En, 1) => "1 day".to_string(),
-            (Lang::En, d) => format!("{d} days"),
-            (Lang::Fr, 1) => "1 jour".to_string(),
-            (Lang::Fr, d) => format!("{d} jours"),
-        }
+        Window::Days(hours / 24)
     } else {
-        match (i18n::lang(), hours) {
-            (Lang::En, 1) => "1 hour".to_string(),
-            (Lang::En, h) => format!("{h} hours"),
-            (Lang::Fr, 1) => "1 heure".to_string(),
-            (Lang::Fr, h) => format!("{h} heures"),
-        }
+        Window::Hours(hours)
+    }
+}
+
+/// The digest heading, written out whole in each language rather than pasted
+/// together from a window label — "Sur les 3 heures écoulés" and "Sur les
+/// 1 jour écoulés" are both wrong, and no single label can fix them.
+fn digest_heading(window: Window) -> String {
+    match (i18n::lang(), window) {
+        (Lang::En, Window::Days(1)) => "Over the last day".to_string(),
+        (Lang::En, Window::Days(d)) => format!("Over the last {d} days"),
+        (Lang::En, Window::Hours(1)) => "Over the last hour".to_string(),
+        (Lang::En, Window::Hours(h)) => format!("Over the last {h} hours"),
+        (Lang::Fr, Window::Days(1)) => "Sur la dernière journée".to_string(),
+        (Lang::Fr, Window::Days(d)) => format!("Sur les {d} derniers jours"),
+        (Lang::Fr, Window::Hours(1)) => "Sur la dernière heure".to_string(),
+        (Lang::Fr, Window::Hours(h)) => format!("Sur les {h} dernières heures"),
     }
 }
 
@@ -182,10 +204,8 @@ fn render_digest(digest: &Digest) -> String {
     let mut out = String::new();
     out.push_str(&"=".repeat(60));
     out.push('\n');
-    out.push_str(&match i18n::lang() {
-        Lang::En => format!("Over the last {}\n", digest.window),
-        Lang::Fr => format!("Sur les {} écoulés\n", digest.window),
-    });
+    out.push_str(&digest_heading(digest.window));
+    out.push('\n');
 
     if digest.events.is_empty() {
         out.push_str(i18n::t(
@@ -195,12 +215,18 @@ fn render_digest(digest: &Digest) -> String {
         return out;
     }
 
-    out.push_str(&match (i18n::lang(), digest.events.len()) {
-        (Lang::En, 1) => "    1 event\n".to_string(),
-        (Lang::En, n) => format!("    {n} events\n"),
-        (Lang::Fr, 1) => "    1 événement\n".to_string(),
-        (Lang::Fr, n) => format!("    {n} événements\n"),
-    });
+    // When the window was capped, say what the list actually is — the newest
+    // slice — rather than printing the cap as if it were the total.
+    out.push_str(
+        &match (i18n::lang(), digest.events.len(), digest.truncated) {
+            (Lang::En, n, true) => format!("    the {n} most recent events\n"),
+            (Lang::En, 1, false) => "    1 event\n".to_string(),
+            (Lang::En, n, false) => format!("    {n} events\n"),
+            (Lang::Fr, n, true) => format!("    les {n} événements les plus récents\n"),
+            (Lang::Fr, 1, false) => "    1 événement\n".to_string(),
+            (Lang::Fr, n, false) => format!("    {n} événements\n"),
+        },
+    );
     for event in &digest.events {
         let when = to_local(&event.created_at);
         out.push_str(&format!(
@@ -247,6 +273,77 @@ fn hostname() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn window_splits_whole_days_from_hours() {
+        assert_eq!(window(168), Window::Days(7));
+        assert_eq!(window(24), Window::Days(1));
+        assert_eq!(window(3), Window::Hours(3));
+        assert_eq!(window(1), Window::Hours(1));
+    }
+
+    /// The heading is a full sentence in each language. French must agree in
+    /// gender and number — « heures » is feminine, « jours » masculine — and a
+    /// count of one is written out, never "les 1 jour".
+    #[test]
+    fn digest_heading_agrees_in_both_languages() {
+        let _guard = i18n::lock_for_test();
+        let prev = i18n::lang();
+
+        i18n::set_lang(Lang::Fr);
+        assert_eq!(
+            digest_heading(Window::Hours(3)),
+            "Sur les 3 dernières heures"
+        );
+        assert_eq!(digest_heading(Window::Days(7)), "Sur les 7 derniers jours");
+        assert_eq!(digest_heading(Window::Days(1)), "Sur la dernière journée");
+        assert_eq!(digest_heading(Window::Hours(1)), "Sur la dernière heure");
+
+        i18n::set_lang(Lang::En);
+        assert_eq!(digest_heading(Window::Hours(3)), "Over the last 3 hours");
+        assert_eq!(digest_heading(Window::Days(7)), "Over the last 7 days");
+        assert_eq!(digest_heading(Window::Days(1)), "Over the last day");
+        assert_eq!(digest_heading(Window::Hours(1)), "Over the last hour");
+
+        i18n::set_lang(prev);
+    }
+
+    /// A capped window must not print the cap as if it were the total.
+    #[test]
+    fn a_truncated_digest_says_so() {
+        let _guard = i18n::lock_for_test();
+        let prev = i18n::lang();
+        i18n::set_lang(Lang::En);
+
+        let event = EventRecord {
+            check_name: "disk".into(),
+            metric_name: "usage_percent_worst".into(),
+            from_state: "NORMAL".into(),
+            to_state: "WARNING".into(),
+            value: 90.0,
+            message: String::new(),
+            created_at: Utc::now(),
+        };
+        let full = Digest {
+            window: Window::Days(7),
+            events: vec![event.clone(), event.clone()],
+            truncated: false,
+        };
+        assert!(render_digest(&full).contains("2 events"));
+
+        let capped = Digest {
+            events: vec![event.clone(), event],
+            truncated: true,
+            ..full
+        };
+        let rendered = render_digest(&capped);
+        assert!(
+            rendered.contains("the 2 most recent events"),
+            "rendered: {rendered}"
+        );
+
+        i18n::set_lang(prev);
+    }
 
     #[test]
     fn parse_since_accepts_days_and_hours() {
