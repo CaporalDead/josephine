@@ -130,6 +130,35 @@ fn daemon_help_lists_run() {
         .stdout(contains("run"));
 }
 
+/// Codes 0/1/2 are the machine's health. A bad command line must not land in
+/// that band, or a status bar would read a typo as "critical".
+#[test]
+fn a_bad_flag_exits_outside_the_health_band() {
+    let output = Command::cargo_bin("josephine")
+        .unwrap()
+        .env("HOME", isolated_home("bad-flag"))
+        .env_remove("XDG_CONFIG_HOME")
+        .env_remove("XDG_DATA_HOME")
+        .args(["status", "--no-such-flag"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(64));
+}
+
+/// `--help` still succeeds: clap hands it back as an `Err`, but it isn't one.
+#[test]
+fn help_exits_zero() {
+    let output = Command::cargo_bin("josephine")
+        .unwrap()
+        .env("HOME", isolated_home("help-code"))
+        .env_remove("XDG_CONFIG_HOME")
+        .env_remove("XDG_DATA_HOME")
+        .arg("--help")
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0));
+}
+
 #[test]
 fn status_json_prints_a_json_array_on_stdout() {
     // The exit code now carries the machine's worst severity (0/1/2), so this

@@ -170,6 +170,11 @@ clear, `1` something to look at, `2` something critical — so it drops straight
 into a script or a status bar. Pair it with `--oneline` for a single glanceable
 line, or `--json` for the full machine-readable view.
 
+Those three codes only ever mean health. If Joséphine can't answer at all she
+exits outside that band, following `sysexits(3)`: `64` if the command line was
+malformed, `70` if the command ran and failed. So a status bar can tell a
+critical machine from a broken invocation.
+
 `josephine update` reaches the network only when you run it — never in the
 background. It detects how Joséphine was installed (`.deb`/`.rpm`/…), downloads
 the matching package, verifies its checksum, and hands the privileged install

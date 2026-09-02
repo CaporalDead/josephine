@@ -96,17 +96,29 @@ enum Commands {
     },
 }
 
+/// The command line was malformed (sysexits `EX_USAGE`).
+const EXIT_USAGE: u8 = 64;
+/// The command ran but failed (sysexits `EX_SOFTWARE`).
+const EXIT_FAILURE: u8 = 70;
+
 /// Entry point: parse, dispatch, and map the outcome to a process exit code.
 ///
 /// `status` (and the bare default) carry the machine's health out through the
 /// exit code so Joséphine composes with scripts and status bars: ok = 0,
-/// attention = 1, critical = 2. A command error also exits non-zero (1).
+/// attention = 1, critical = 2.
+///
+/// Codes `0..=2` are therefore *health*, never failure: a status bar polling
+/// `josephine status` must be able to tell "the machine is critical" from
+/// "Joséphine could not answer". Anything that stops her from answering lands
+/// in a separate band, following sysexits(3): a bad command line exits
+/// [`EXIT_USAGE`] (64), and a command that ran and failed exits
+/// [`EXIT_FAILURE`] (70).
 pub async fn run() -> ExitCode {
     match dispatch().await {
         Ok(code) => code,
         Err(e) => {
             eprintln!("{} {e}", josephine_core::voice::error_lead());
-            ExitCode::from(1)
+            ExitCode::from(EXIT_FAILURE)
         }
     }
 }
@@ -162,7 +174,19 @@ async fn dispatch() -> Result<ExitCode> {
     if matches!(josephine_core::i18n::lang(), Lang::Fr) {
         command = localize_help_fr(command);
     }
-    let cli = Cli::from_arg_matches(&command.get_matches()).unwrap_or_else(|e| e.exit());
+    // Parse by hand rather than letting clap exit for us: clap's own exit code
+    // for a usage error is 2, which is "critical" in our health band. Route it
+    // to EXIT_USAGE instead. `--help` / `--version` also arrive here as an
+    // `Err`, but they are a success and print to stdout — `use_stderr()` is
+    // what tells the two apart.
+    let matches = match command.try_get_matches() {
+        Ok(matches) => matches,
+        Err(e) => {
+            let _ = e.print();
+            return Ok(ExitCode::from(if e.use_stderr() { EXIT_USAGE } else { 0 }));
+        }
+    };
+    let cli = Cli::from_arg_matches(&matches).unwrap_or_else(|e| e.exit());
 
     if cli.daemon_internal {
         josephine_core::daemon::run_daemon_foreground().await?;
@@ -238,7 +262,7 @@ async fn dispatch() -> Result<ExitCode> {
 
 #[cfg(test)]
 mod tests {
-    use super::severity_code;
+    use super::{EXIT_FAILURE, EXIT_USAGE, severity_code};
     use josephine_core::check::Severity;
 
     #[test]
@@ -246,5 +270,20 @@ mod tests {
         assert_eq!(severity_code(Severity::Info), 0);
         assert_eq!(severity_code(Severity::Attention), 1);
         assert_eq!(severity_code(Severity::Critique), 2);
+    }
+
+    /// A script reading the exit code must never mistake a failure for a
+    /// health verdict, so the two bands may not overlap.
+    #[test]
+    fn failure_codes_stay_out_of_the_health_band() {
+        let health = [
+            severity_code(Severity::Info),
+            severity_code(Severity::Attention),
+            severity_code(Severity::Critique),
+        ];
+        for code in [EXIT_USAGE, EXIT_FAILURE] {
+            assert!(!health.contains(&code), "{code} collides with a severity");
+        }
+        assert_ne!(EXIT_USAGE, EXIT_FAILURE);
     }
 }
