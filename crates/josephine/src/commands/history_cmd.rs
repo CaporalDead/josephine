@@ -44,7 +44,7 @@ pub fn run() -> Result<()> {
     );
 
     let mut trend = Table::new();
-    trend.load_preset(UTF8_BORDERS_ONLY);
+    trend.load_style(UTF8_BORDERS_ONLY);
     trend.set_content_arrangement(ContentArrangement::Dynamic);
     trend.set_header(vec![
         Cell::new(i18n::t("Metric", "Métrique")).add_attribute(Attribute::Bold),
@@ -88,7 +88,7 @@ pub fn run() -> Result<()> {
     }
 
     let mut events_table = Table::new();
-    events_table.load_preset(UTF8_BORDERS_ONLY);
+    events_table.load_style(UTF8_BORDERS_ONLY);
     events_table.set_content_arrangement(ContentArrangement::Dynamic);
     events_table.set_header(vec![
         Cell::new(i18n::t("Time", "Heure")).add_attribute(Attribute::Bold),
