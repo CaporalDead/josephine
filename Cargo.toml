@@ -10,7 +10,7 @@ license = "MIT OR Apache-2.0"
 authors = ["Kevin Delfour"]
 repository = "https://github.com/systm-d/josephine"
 homepage = "https://github.com/systm-d/josephine"
-description = "Your computer's guardian spirit"
+description = "Your computer's guardian angel"
 
 [workspace.dependencies]
 anyhow = "1"

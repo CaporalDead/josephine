@@ -8,13 +8,12 @@ set -euo pipefail
 
 lang="${1:?usage: make-social-preview.sh <en|fr>}"
 case "$lang" in
-  en) formula="Your computer's guardian spirit" ;;
-  fr) formula="L'esprit gardien de votre ordinateur" ;;
+  en) formula="Your computer's guardian angel" ;;
+  fr) formula="L'ange gardien de votre ordinateur" ;;
   *)  echo "unknown language: $lang (expected en or fr)" >&2; exit 1 ;;
 esac
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-portrait="$root/site/static/josephine-portrait-721.webp"
 out="$root/resources/social-preview-$lang.png"
 
 # ImageMagick treats an unresolvable font as a warning, not an error, and
@@ -28,36 +27,53 @@ fc-list : family | tr ',' '\n' | grep -x "Source Code Pro" >/dev/null ||
 night="#0b0e19"
 star_col="#e9eaf6"
 violet="#9a86e0"
-dim="#8b91b4"
+violet_bright="#b3a3ec"
+dim="#cdd2ea"
 mono="Source-Code-Pro"
 
 # The ✦ is drawn from a path, not typed: Source Code Pro has no glyph for
 # U+2726, and the fonts that do (Symbola, FreeSerif) are not dependable on
 # another machine. A path renders identically everywhere.
-star_svg=$(mktemp --suffix=.svg)
-trap 'rm -f "$star_svg"' EXIT
-cat > "$star_svg" <<SVG
-<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24">
-  <path d="M12 0 L14.4 9.6 L24 12 L14.4 14.4 L12 24 L9.6 14.4 L0 12 L9.6 9.6 Z" fill="$violet"/>
+#
+# The halo above it is what makes the mark Joséphine's rather than a generic
+# star — the same ellipse the site's guardian() macro draws over the laptop.
+mark_svg=$(mktemp --suffix=.svg)
+trap 'rm -f "$mark_svg"' EXIT
+cat > "$mark_svg" <<SVG
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 44 44">
+  <ellipse cx="22" cy="7" rx="13" ry="3.4" fill="none"
+           stroke="$violet_bright" stroke-opacity="0.80" stroke-width="1.1"/>
+  <ellipse cx="22" cy="7" rx="13" ry="3.4" fill="none"
+           stroke="$violet" stroke-opacity="0.16" stroke-width="4"/>
+  <path d="M22 14 L24.4 24.6 L35 27 L24.4 29.4 L22 40 L19.6 29.4 L9 27 L19.6 24.6 Z"
+        fill="$violet_bright"/>
 </svg>
 SVG
 
-# Night ground, then a soft violet glow, then the portrait, then the text.
-# The explicit `-compose Over` after the glow is load-bearing: without it the
-# Screen operator carries over and washes the character out.
+# Night ground, then a restrained violet glow, then the mark and the wordmark,
+# centred. Two things the glow layer has to get right: it is built on black,
+# not on $night, because the Screen composite must only *add* light where the
+# glow actually is — screening a $night layer lifts the entire canvas and
+# washes the formula out; and it is damped afterwards so the ground still
+# reads as night. Joséphine's signature is the haloed ✦, not a portrait — the
+# illustration this used to composite belonged to the guardian-spirit identity
+# and went out with it.
+#
+# `-background none` before the SVG is load-bearing: ImageMagick otherwise
+# rasterises it over opaque white, which lands the mark in a white box.
 magick -size 1200x630 "xc:$night" \
-  \( -size 1200x630 "xc:$night" \
-     -fill "$violet" -draw 'circle 330,315 330,150' -blur 0x70 \) \
+  \( -size 1200x630 "xc:black" \
+     -fill "$violet" -draw 'circle 600,255 600,75' -blur 0x130 \
+     -evaluate Multiply 0.62 \) \
   -compose Screen -composite \
   -compose Over \
-  \( "$portrait" -resize x520 \) -gravity west -geometry +60+0 -composite \
-  "$star_svg" -gravity northwest -geometry +566+172 -composite \
-  -font "$mono" -fill "$star_col" -pointsize 76 \
-  -gravity northwest -annotate +614+140 "Joséphine" \
-  -font "$mono" -fill "$dim" -pointsize 23 \
-  -gravity northwest -annotate +618+258 "$formula" \
+  -background none "$mark_svg" -gravity north -geometry +0+130 -composite \
+  -font "$mono" -fill "$star_col" -pointsize 92 \
+  -gravity north -annotate +0+288 "Joséphine" \
+  -font "$mono" -fill "$dim" -pointsize 27 \
+  -gravity north -annotate +0+414 "$formula" \
   -font "$mono" -fill "$violet" -pointsize 19 \
-  -gravity southwest -annotate +620+92 "github.com/systm-d/josephine" \
+  -gravity south -annotate +0+72 "github.com/systm-d/josephine" \
   -depth 8 -alpha off -strip \
   "PNG24:$out"
 

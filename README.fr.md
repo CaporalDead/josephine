@@ -1,6 +1,6 @@
 # Joséphine
 
-> **L'esprit gardien de votre ordinateur.**
+> **L'ange gardien de votre ordinateur.**
 
 Joséphine observe votre machine en silence et n'intervient que lorsqu'une intervention est utile. Elle surveille, détecte, prévient et accompagne — sans jamais devenir intrusive.
 

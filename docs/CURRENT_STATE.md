@@ -79,7 +79,7 @@ titre de document (« Joséphine — rapport système ») sans en-tête `✦`, p
 éviter un « Joséphine » en double ; `daemon`, `config` et `notify` n'affichent
 aucun en-tête, seulement des lignes de résultat détonées.
 
-### Voix & variété — l'esprit gardien (depuis 0.10.0)
+### Voix & variété — l'ange gardien (depuis 0.10.0)
 
 Joséphine a désormais un peu de **caractère**, et surtout de la **variété** :
 le module `josephine-core/src/voice.rs` fournit un moteur qui tire au sort une
@@ -113,7 +113,7 @@ actions à mener, la plus grave d'abord, et seulement quand il y en a.
 - États : NORMAL → WARNING → CRITICAL → RECOVERED
 - Anti-spam : pas de notification si l'état ne change pas
 - Messages : module `messages.rs`, ton « chaleur sobre » depuis 0.7.0 —
-  direct, calme, rassurant, jamais alarmiste (identité esprit gardien,
+  direct, calme, rassurant, jamais alarmiste (identité ange gardien,
   sans mascotte ni emoji). Depuis 0.10.0, les messages de
   **rétablissement** sont variés via `voice.rs` (plusieurs formulations
   EN + FR) ; le **corps des alertes reste stable** (fait + commande)
@@ -205,7 +205,7 @@ Commande : `cargo test --workspace`
 | TUI / `watch` | Hors périmètre |
 | Logo ASCII | Retiré au profit d'un en-tête sobre `✦` (0.7.0) ; `banner.txt` personnalisé toujours possible |
 | Notifications | Démon uniquement, pas le CLI interactif |
-| Ton | Bilingue (anglais par défaut, français en option) ; identité esprit gardien, sucre visuel retiré — « chaleur sobre » depuis 0.7.0 ; **variété + caractère joueur** via `voice.rs` depuis 0.10.0 (lignes de caractère uniquement, faits d'alerte stables) |
+| Ton | Bilingue (anglais par défaut, français en option) ; identité ange gardien, sucre visuel retiré — « chaleur sobre » depuis 0.7.0 ; **variété + caractère joueur** via `voice.rs` depuis 0.10.0 (lignes de caractère uniquement, faits d'alerte stables) |
 
 ---
 

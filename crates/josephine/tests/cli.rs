@@ -210,7 +210,7 @@ fn help_about_follows_the_configured_language() {
         .arg("--help")
         .assert()
         .success()
-        .stdout(contains("guardian spirit"));
+        .stdout(contains("guardian angel"));
 
     // French when the config sets `language: fr`.
     let fr = isolated_home("help-fr");
@@ -223,7 +223,7 @@ fn help_about_follows_the_configured_language() {
         .arg("--help")
         .assert()
         .success()
-        .stdout(contains("esprit gardien"));
+        .stdout(contains("ange gardien"));
 }
 
 #[test]

@@ -1,7 +1,7 @@
 //! Joséphine's voice — a little variety so she doesn't say things the exact
 //! same way every time.
 //!
-//! A guardian spirit with some character: warm, quietly playful, and never the
+//! A guardian angel with some character: warm, quietly playful, and never the
 //! same line twice in a row if we can help it. Two rules hold everywhere:
 //!
 //! * **Flavour only.** Variety lives on personality lines (greetings, "all

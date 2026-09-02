@@ -9,9 +9,9 @@ use crate::commands::{
     explain_cmd, history_cmd, notify_cmd, report_cmd, status_cmd, update_cmd,
 };
 
-/// Your computer's guardian spirit
+/// Your computer's guardian angel
 #[derive(Parser)]
-#[command(name = "josephine", about = "Your computer's guardian spirit", version)]
+#[command(name = "josephine", about = "Your computer's guardian angel", version)]
 struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
@@ -139,7 +139,7 @@ fn severity_code(severity: josephine_core::check::Severity) -> u8 {
 /// Localise the top-level and per-subcommand `--help` text to French.
 fn localize_help_fr(command: clap::Command) -> clap::Command {
     command
-        .about("L'esprit gardien de votre ordinateur")
+        .about("L'ange gardien de votre ordinateur")
         .mut_subcommand("status", |c| {
             c.about("Résumé rapide de la santé de votre machine")
         })

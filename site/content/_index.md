@@ -35,7 +35,7 @@ To keep Joséphine watching across reboots, enable the bundled systemd **user** 
 systemctl --user enable --now josephine
 ```
 
-<p class="callout"><strong>Joséphine is a guardian spirit, not a dashboard.</strong> She notices when your machine needs a hand, tells you plainly what it needs — and shows you the command rather than running it behind your back. For people who'd rather not have to keep an eye on it themselves.</p>
+<p class="callout"><strong>Joséphine is a guardian angel, not a dashboard.</strong> She notices when your machine needs a hand, tells you plainly what it needs — and shows you the command rather than running it behind your back. For people who'd rather not have to keep an eye on it themselves.</p>
 
 > Joséphine speaks English by default — set `language: fr` in the config for her French voice. The warm, direct tone is preserved in both.
 </section>
