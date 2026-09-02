@@ -8,13 +8,12 @@ set -euo pipefail
 
 lang="${1:?usage: make-social-preview.sh <en|fr>}"
 case "$lang" in
-  en) formula="Your computer's guardian spirit" ;;
-  fr) formula="L'esprit gardien de votre ordinateur" ;;
+  en) formula="Your computer's guardian angel" ;;
+  fr) formula="L'ange gardien de votre ordinateur" ;;
   *)  echo "unknown language: $lang (expected en or fr)" >&2; exit 1 ;;
 esac
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-portrait="$root/site/static/josephine-portrait-721.webp"
 out="$root/resources/social-preview-$lang.png"
 
 # ImageMagick treats an unresolvable font as a warning, not an error, and
@@ -37,27 +36,26 @@ mono="Source-Code-Pro"
 star_svg=$(mktemp --suffix=.svg)
 trap 'rm -f "$star_svg"' EXIT
 cat > "$star_svg" <<SVG
-<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24">
+<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 24 24">
   <path d="M12 0 L14.4 9.6 L24 12 L14.4 14.4 L12 24 L9.6 14.4 L0 12 L9.6 9.6 Z" fill="$violet"/>
 </svg>
 SVG
 
-# Night ground, then a soft violet glow, then the portrait, then the text.
-# The explicit `-compose Over` after the glow is load-bearing: without it the
-# Screen operator carries over and washes the character out.
+# Night ground, then a soft violet glow, then the mark and the wordmark,
+# centred. Joséphine's signature is the ✦, not a portrait — the illustration
+# it used to composite belonged to the guardian-spirit identity.
 magick -size 1200x630 "xc:$night" \
   \( -size 1200x630 "xc:$night" \
-     -fill "$violet" -draw 'circle 330,315 330,150' -blur 0x70 \) \
+     -fill "$violet" -draw 'circle 600,315 600,120' -blur 0x70 \) \
   -compose Screen -composite \
   -compose Over \
-  \( "$portrait" -resize x520 \) -gravity west -geometry +60+0 -composite \
-  "$star_svg" -gravity northwest -geometry +566+172 -composite \
-  -font "$mono" -fill "$star_col" -pointsize 76 \
-  -gravity northwest -annotate +614+140 "Joséphine" \
-  -font "$mono" -fill "$dim" -pointsize 23 \
-  -gravity northwest -annotate +618+258 "$formula" \
+  "$star_svg" -gravity north -geometry +0+150 -composite \
+  -font "$mono" -fill "$star_col" -pointsize 88 \
+  -gravity north -annotate +0+268 "Joséphine" \
+  -font "$mono" -fill "$dim" -pointsize 26 \
+  -gravity north -annotate +0+392 "$formula" \
   -font "$mono" -fill "$violet" -pointsize 19 \
-  -gravity southwest -annotate +620+92 "github.com/systm-d/josephine" \
+  -gravity south -annotate +0+72 "github.com/systm-d/josephine" \
   -depth 8 -alpha off -strip \
   "PNG24:$out"
 

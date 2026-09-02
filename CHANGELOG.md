@@ -7,14 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Removed
+### Changed
 
-- **The example banner is gone.** `resources/banner.txt` was an ASCII angel from
-  before Joséphine had a face, and the README offered it as a ready-to-use
-  example — so anyone who followed it installed the old identity above their
-  status screen. The feature itself is untouched: drop any ASCII or Braille art
-  in `~/.config/josephine/banner.txt` and it still appears above the title,
-  tinted with a gradient.
+- **Joséphine is an *ange gardien* again.** v0.12.0 recast her as a guardian
+  spirit — a fox-spirit — and the words were changed to match four new
+  illustrations. That was the wrong way round: the positioning followed an art
+  direction instead of the other way about, and it cut the name loose from what
+  it refers to. *Joséphine, ange gardien* is why she is called Joséphine; a
+  French given name on a fox-spirit explains nothing, and "guardian spirit"
+  needs the picture to be understood — which is no use in `--help`, in
+  `Cargo.toml`, or on crates.io, where there is no picture. The formula is
+  `Your computer's guardian angel` / `L'ange gardien de votre ordinateur`
+  everywhere again: the CLI in both languages, both READMEs, the crates.io and
+  site descriptions, and the tone rule.
+  What does **not** come back is the promise the old wording carried. The
+  callout still says she notices, tells you plainly, and shows you the command
+  rather than running it behind your back — v0.12.0 was right about that, and
+  it stands.
+- **The site returns to the inline guardian.** The four illustrations and the
+  hero portrait are gone; the signature scene under "how she works" is once
+  more the drawn SVG — halo, discreet wings behind the laptop, her ✦ on the
+  screen — captioned *Envoyée veiller sur une machine. La vôtre.* The hero is
+  a single centred column again, and the page ships nine fewer image files.
+- **The example banner is back.** `resources/banner.txt` was dropped a moment
+  ago as "the last angel in the repository". It is the right identity again.
+- **The social previews are recomposed around the ✦** rather than a portrait,
+  and `resources/make-social-preview.sh` no longer needs an illustration to
+  run.
 
 ## [0.12.0] - 2026-07-27
 

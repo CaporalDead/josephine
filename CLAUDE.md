@@ -16,7 +16,7 @@ Local Linux system guardian. Rust workspace: `josephine-core` (pure logic) +
 - **English by default, French via `language: fr` in the config** (see
   `josephine-core/src/i18n.rs`). Warm, protective, quietly playful — never
   alarmist, and never `ERROR`/`FATAL`/`PANIC` in user-facing text. The
-  register is Joséphine herself: a guardian spirit bound to one machine, who
+  register is Joséphine herself: a guardian angel bound to one machine, who
   speaks up only when it matters and **shows you the command rather than
   running it**. Every user-facing string must ship **English and French** —
   wrap literals in `i18n::t(en, fr)`, or use `match i18n::lang()` for

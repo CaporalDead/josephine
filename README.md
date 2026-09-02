@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="resources/social-preview-en.png" alt="Joséphine — your computer's quiet guardian spirit" width="720">
+  <img src="resources/social-preview-en.png" alt="Joséphine — your computer's quiet guardian angel" width="720">
 </p>
 
 <h1 align="center">Joséphine</h1>
 
-<p align="center"><em>Your computer's quiet guardian spirit.</em></p>
+<p align="center"><em>Your computer's quiet guardian angel.</em></p>
 
 <p align="center">
   <a href="https://github.com/systm-d/josephine/actions/workflows/ci.yml"><img src="https://github.com/systm-d/josephine/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
@@ -181,7 +181,7 @@ History and the daemon's state live under `~/.local/share/josephine/`.
 
 The `status` header is deliberately sober. Want a flourish? Drop any ASCII/Braille
 art in `~/.config/josephine/banner.txt` and it appears above the title, tinted
-with a gradient.
+with a gradient. A ready-to-use example lives at [`resources/banner.txt`](resources/banner.txt).
 
 ## Documentation
 

@@ -35,7 +35,7 @@ Pour que Joséphine veille au fil des redémarrages, activez l'unité systemd **
 systemctl --user enable --now josephine
 ```
 
-<p class="callout"><strong>Joséphine est un esprit gardien, pas un tableau de bord.</strong> Elle remarque quand votre machine a besoin d'un coup de main, vous dit clairement ce qu'il lui faut — et vous montre la commande plutôt que de l'exécuter dans votre dos. Pour celles et ceux qui préfèrent ne pas avoir à la surveiller eux-mêmes.</p>
+<p class="callout"><strong>Joséphine est un ange gardien, pas un tableau de bord.</strong> Elle remarque quand votre machine a besoin d'un coup de main, vous dit clairement ce qu'il lui faut — et vous montre la commande plutôt que de l'exécuter dans votre dos. Pour celles et ceux qui préfèrent ne pas avoir à la surveiller eux-mêmes.</p>
 
 > Joséphine parle anglais par défaut — mettez `language: fr` dans la config pour sa voix française. Le ton chaleureux et direct est préservé dans les deux.
 </section>
