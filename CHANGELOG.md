@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`josephine-report.timer`, shipped in the `.deb`/`.rpm`/AUR packages) runs it
   weekly and prints to the journal (`journalctl --user -u josephine-report`): a
   look back, never a push you didn't ask for.
+- **The SMART check now tracks SSD/NVMe wear.** A single `smartctl -j -a` per
+  disk now yields both the pass/fail health verdict and how much of the drive's
+  rated write life is used — `percentage_used` on NVMe, a life-left attribute
+  matched *by name* on SATA SSDs (ids are reused across vendors: 231 is
+  `SSD_Life_Left` on some drives and `Temperature_Celsius` on others) — and
+  warns as it climbs (default 80%, critical 90%).
+  The worst disk sets the figure; spinning disks and SMART-less drives are
+  simply skipped. Still opt-in (root), still degrading gracefully — the "fading
+  SSD" made measurable years before `-H` flips to failing.
 
 ### Removed
 
