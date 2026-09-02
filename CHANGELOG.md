@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-09-02
+
+### Fixed
+
+- **The packaging surfaces say *ange gardien* again.** v0.13.0 reverted the
+  identity across the CLI, the docs and the site, but the guardian-spirit
+  wording had been carried into the packaging files by a separate commit that
+  the revert missed — so v0.13.0 shipped with seven of them still describing a
+  guardian spirit. These are the surfaces users actually read: `brew info`,
+  `systemctl status`, `nix flake metadata`, `nix search`, and the AUR listing.
+  The systemd unit description in the v0.13.0 `.deb`/`.rpm` was the visible one;
+  this release corrects it.
+- **The Homebrew formula points at the current release again.** The tap job in
+  `release.yml` pushes `Formula/josephine.rb` straight to `main`, which the
+  branch ruleset rejects (a pull request and its checks are required), so the
+  v0.13.0 tag left the formula pinned to the v0.12.0 tarball and
+  `brew install josephine` kept resolving to the old release. The formula is
+  corrected here; the job itself still needs to learn to open a pull request,
+  or it will fail again on the next tag.
+
+### Changed
+
+- **The site drops the drawn guardian.** The "how she works" section loses its
+  inline halo-and-wings SVG and is now just the chain — machine, checks,
+  decision, notification, command — centred on its own. The homage line
+  *Envoyée veiller sur une machine. La vôtre.* stays, closing the section. The
+  site now carries no illustration at all: `site/static/` holds the favicon and
+  nothing else.
+
 ## [0.13.0] - 2026-09-02
 
 ### Added

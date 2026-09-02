@@ -180,7 +180,6 @@ Your machine, watched over.
   </p>
 
   <div class="how">
-    <figure class="how__art">{{ m::guardian() }}<figcaption class="how__cap">{% if fr %}Envoyée veiller sur une machine. La vôtre.{% else %}Sent to watch over one machine. Yours.{% endif %}</figcaption></figure>
     <div class="flow" role="list">
       <div class="flow__node" role="listitem"><span class="flow__k">{% if fr %}Votre machine{% else %}Your machine{% endif %}</span><span class="flow__v">/proc · /sys · systemd · journal</span></div>
       <div class="flow__arrow" aria-hidden="true">↓</div>
@@ -193,6 +192,8 @@ Your machine, watched over.
       <div class="flow__node flow__node--cmd" role="listitem"><span class="flow__k">{% if fr %}Une commande suggérée{% else %}A suggested command{% endif %}</span><span class="flow__v"><code>josephine doctor</code></span></div>
     </div>
   </div>
+
+  <p class="how__cap">{% if fr %}Envoyée veiller sur une machine. La vôtre.{% else %}Sent to watch over one machine. Yours.{% endif %}</p>
 </section>
 
 <hr class="divider" />
