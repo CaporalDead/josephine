@@ -31,9 +31,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   a single centred column again, and the page ships nine fewer image files.
 - **The example banner is back.** `resources/banner.txt` was dropped a moment
   ago as "the last angel in the repository". It is the right identity again.
-- **The social previews are recomposed around the ✦** rather than a portrait,
-  and `resources/make-social-preview.sh` no longer needs an illustration to
-  run.
+- **The social previews are recomposed around the haloed ✦** rather than a
+  portrait: night ground, a restrained violet glow, the mark under its halo,
+  the wordmark and the formula. `resources/make-social-preview.sh` no longer
+  needs an illustration to run, and regenerating twice gives byte-identical
+  files — the previews are reproducible from the script alone.
 
 ## [0.12.0] - 2026-07-27
 
