@@ -183,7 +183,7 @@ Your machine, watched over.
     <div class="flow" role="list">
       <div class="flow__node" role="listitem"><span class="flow__k">{% if fr %}Votre machine{% else %}Your machine{% endif %}</span><span class="flow__v">/proc · /sys · systemd · journal</span></div>
       <div class="flow__arrow" aria-hidden="true">↓</div>
-      <div class="flow__node flow__node--wide" role="listitem"><span class="flow__k">{% if fr %}14 contrôles indépendants{% else %}14 independent health checks{% endif %}</span><span class="flow__v">{% if fr %}lus localement, jamais envoyés{% else %}read locally, never sent{% endif %}</span></div>
+      <div class="flow__node flow__node--wide" role="listitem"><span class="flow__k">{% if fr %}16 contrôles indépendants{% else %}16 independent health checks{% endif %}</span><span class="flow__v">{% if fr %}lus localement, jamais envoyés{% else %}read locally, never sent{% endif %}</span></div>
       <div class="flow__arrow" aria-hidden="true">↓</div>
       <div class="flow__node" role="listitem"><span class="flow__k">{% if fr %}Moteur de décision{% else %}Decision engine{% endif %}</span><span class="flow__v">{% if fr %}gravité · dé-duplication · anti-spam{% else %}severity · de-dupe · rate-limit{% endif %}</span></div>
       <div class="flow__arrow" aria-hidden="true">↓</div>
@@ -198,15 +198,15 @@ Your machine, watched over.
 
 <hr class="divider" />
 
-{# ============================ FOURTEEN CHECKS ============================ #}
+{# ============================ SIXTEEN CHECKS ============================ #}
 <section class="reveal" aria-labelledby="checks">
   <p class="eyebrow">{% if fr %}Ce qu'elle surveille{% else %}What she watches{% endif %}</p>
-  <h2 id="checks">{% if fr %}Quatorze signes vitaux{% else %}Fourteen vital signs{% endif %}</h2>
+  <h2 id="checks">{% if fr %}Seize signes vitaux{% else %}Sixteen vital signs{% endif %}</h2>
   <p class="section__lede">
     {%- if fr -%}
-    Comme elle le voit, on l'a envoyée ici pour une mission — votre machine — alors elle ne fait pas les choses à moitié : quatorze contrôles, chacun indépendant, configurable, et lu directement dans le noyau et <code>/sys</code>. Ensemble, ils couvrent les manières lentes et discrètes dont une machine dérive.
+    Comme elle le voit, on l'a envoyée ici pour une mission — votre machine — alors elle ne fait pas les choses à moitié : seize contrôles, chacun indépendant, configurable, et lu directement dans le noyau et <code>/sys</code>. Ensemble, ils couvrent les manières lentes et discrètes dont une machine dérive.
     {%- else -%}
-    The way she sees it, she was sent here for one job — your machine — so she doesn't cut corners: fourteen checks, each independent, configurable, and read straight from the kernel and <code>/sys</code>. Together they cover the slow, quiet ways a machine drifts.
+    The way she sees it, she was sent here for one job — your machine — so she doesn't cut corners: sixteen checks, each independent, configurable, and read straight from the kernel and <code>/sys</code>. Together they cover the slow, quiet ways a machine drifts.
     {%- endif -%}
   </p>
 
@@ -245,7 +245,7 @@ Your machine, watched over.
   <div class="term"><div class="term__bar"><span class="term__dot"></span><span class="term__dot"></span><span class="term__dot"></span><span class="term__title">josephine doctor</span></div>
 {% if fr -%}
 <pre><span class="dim">✦ Joséphine · diagnostic                        14:40</span>
-14 contrôles · 1 à regarder
+16 contrôles · 1 à regarder
 <span class="rule">──────────────────────────────────────────────────</span>
  <span class="g-warn">▲</span>  Mises à jour · <span class="g-warn">attention</span>             30 dispo.
     ▓▓▓▓▓▓▓░░░░░░░  apt : 30 paquets à mettre à jour
@@ -260,7 +260,7 @@ Your machine, watched over.
  <span class="dim">✧ Je montre, vous appuyez. Rien ne s'exécute dans votre dos.</span></pre>
 {%- else -%}
 <pre><span class="dim">✦ Joséphine · diagnostic                        14:40</span>
-14 checks · 1 to look at
+16 checks · 1 to look at
 <span class="rule">──────────────────────────────────────────────────</span>
  <span class="g-warn">▲</span>  Updates · <span class="g-warn">attention</span>                    30 available
     ▓▓▓▓▓▓▓░░░░░░░  apt: 30 package updates pending

@@ -7,7 +7,7 @@ tagline = "Votre machine, sous bonne garde — en silence."
 lede = "Vous avez déjà htop, smartctl et journalctl. Joséphine, elle, veille entre deux coups d'œil — elle repère les problèmes lents (un disque qui se remplit, un SSD qui faiblit, un service arrêté en silence) et vous prévient avant qu'ils ne deviennent les vôtres."
 cta = "Voir sur GitHub"
 cta2 = "Installer"
-readout_alt = "Exemple de sortie josephine status : quatorze contrôles, un à surveiller"
+readout_alt = "Exemple de sortie josephine status : seize contrôles, un à surveiller"
 +++
 
 <section id="install" class="reveal">

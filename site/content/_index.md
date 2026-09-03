@@ -7,7 +7,7 @@ tagline = "Your machine, watched over — quietly."
 lede = "You already have htop, smartctl and journalctl. Joséphine is the one keeping watch between glances — she notices the slow problems (a filling disk, a fading SSD, a service that quietly died) and speaks up before they become your problem."
 cta = "View on GitHub"
 cta2 = "Install"
-readout_alt = "Example josephine status output: fourteen checks, one flagged for attention"
+readout_alt = "Example josephine status output: sixteen checks, one flagged for attention"
 +++
 
 <section id="install" class="reveal">
